@@ -1,0 +1,30 @@
+# Node modules (EAS will install them anyway)
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Expo / React Native temp
+.expo/
+.expo-shared/
+*.expo
+*.expo.*.log
+
+# Build outputs
+android/
+ios/
+web-build/
+dist/
+
+# Temp / cache files
+AppData/
+Temp/
+*.tmp
+
+# IDE / editor files
+.vscode/
+.idea/
+*.swp
