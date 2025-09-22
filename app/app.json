@@ -1,17 +1,15 @@
 {
   "expo": {
-    "name": "lista1",
-    "slug": "lista1",
+    "name": "microwizards",
+    "slug": "microwizards",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
+    
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
@@ -20,15 +18,14 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.lista1"
+      "package": "com.microwizards.app"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
       "eas": {
-        "projectId": "f5ceb4ed-ef9f-461a-8976-4275d4821c7e"
+        "projectId": "68e6e59f-1154-4ce6-94b1-5a29d1345c07"
       }
     }
   }
