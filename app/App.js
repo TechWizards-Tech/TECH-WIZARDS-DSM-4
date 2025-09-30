@@ -1,26 +1,25 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import HomeScreen from './screens/HomeScreen';
-import VideoScreen from './screens/VideoScreen';
-
-const Stack = createNativeStackNavigator();
+import VideoPlayer from './components/VideoPlayer';
 
 export default function App() {
+  const [showVideo, setShowVideo] = useState(false);
+
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen 
-          name="Home" 
-          component={HomeScreen}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen 
-          name="Video" 
-          component={VideoScreen}
-          options={{ headerShown: false }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <View style={styles.container}>
+      {showVideo ? (
+        <VideoPlayer onClose={() => setShowVideo(false)} />
+      ) : (
+        <HomeScreen onPlay={() => setShowVideo(true)} />
+      )}
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5FCFF',
+  },
+});

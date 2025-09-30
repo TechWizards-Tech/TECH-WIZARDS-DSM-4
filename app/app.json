@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -27,6 +26,9 @@
       "eas": {
         "projectId": "68e6e59f-1154-4ce6-94b1-5a29d1345c07"
       }
-    }
+    },
+    "plugins": [
+      "expo-video"
+    ]
   }
 }

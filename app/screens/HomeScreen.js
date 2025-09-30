@@ -1,25 +1,50 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
 
-export default function HomeScreen({ navigation }) {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+export default function HomeScreen({ onPlay }) {
+  const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+  const handlePress = () => {
+    // Scale down animation
+    Animated.sequence([
+      // Scale down
+      Animated.timing(scaleAnim, {
+        toValue: 0.8,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      // Scale back up slightly
+      Animated.timing(scaleAnim, {
+        toValue: 1.1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      // Scale down to invisible
+      Animated.timing(scaleAnim, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Call onPlay after animation completes
+      onPlay();
+    });
+  };
 
   return (
     <View style={styles.container}>
       <TouchableOpacity 
-        style={styles.logoContainer}
-        onPress={() => navigation.navigate('Video')}
-        activeOpacity={0.7}
+        onPress={handlePress}
+        activeOpacity={0.9}
       >
-        <Animated.View style={{ opacity: fadeAnim }}>
+        <Animated.View 
+          style={[
+            styles.logoContainer,
+            {
+              transform: [{ scale: scaleAnim }],
+            }
+          ]}
+        >
           <Image 
             source={require('../assets/logo.png')} 
             style={styles.logo}
@@ -39,8 +64,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5FCFF',
   },
   logoContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 30,
   },
   logo: {
