@@ -34,10 +34,9 @@ As imagens poderão ser visualizadas **em tempo real** por meio de um **aplicati
             │
             ▼
       [Servidor em Nuvem / Backend API]
-            │           │
-      [Banco de Dados]  │
+            │           │  
             │           ▼
-        [Armazenamento de Imagens (S3/Blob)]
+           [Stream de Video]
                         │
                         ▼
        [App Mobile]  +  [Web App]  ← tempo real e snapshots
