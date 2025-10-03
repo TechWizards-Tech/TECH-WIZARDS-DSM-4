@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import { Colors } from '../theme';
 
 export default function HomeScreen({ onPlay }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   const handlePress = () => {
-    // Scale down animation
     Animated.sequence([
       // Scale down
       Animated.timing(scaleAnim, {
@@ -26,16 +26,15 @@ export default function HomeScreen({ onPlay }) {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Call onPlay after animation completes
       onPlay();
     });
   };
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: Colors.light.background }]}>
       <TouchableOpacity 
         onPress={handlePress}
-        activeOpacity={0.9}
+        activeOpacity={0.7}
       >
         <Animated.View 
           style={[
@@ -61,7 +60,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
   },
   logoContainer: {
     padding: 30,
