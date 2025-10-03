@@ -11,6 +11,24 @@ As imagens poderão ser visualizadas **em tempo real** por meio de um **aplicati
 
 ---
 
+## ✅ Requisitos Funcionais 
+1. O sistema deve capturar imagens e vídeos de microscópios ópticos por meio de uma câmera acoplada.
+2. O sistema deve transmitir o fluxo de vídeo em tempo real para um servidor em nuvem.
+3. O sistema deve disponibilizar uma aplicação web e uma aplicação mobile para visualização das imagens em tempo real.
+4. O sistema deve permitir ao usuário realizar capturas (snapshots) e salvar imagens selecionadas.
+5. O sistema deve garantir compatibilidade com os microscópios disponíveis na Fatec Jacareí.
+6. O sistema deve permitir múltiplos acessos simultâneos (ex.: toda a turma visualizando a mesma amostra).
+
+## ⚙ Requisitos Não Funcionais
+1. O sistema deve ser acessível em dispositivos móveis (Android) e navegadores web.
+2. A transmissão deve ter baixa latência, garantindo experiência em tempo real.
+3. O sistema deve ser escalável para suportar acessos simultâneos sem perda significativa de desempenho.
+4. A solução embarcada (Raspberry Pi) deve ser de fácil configuração e manutenção.
+5. O backend deve seguir boas práticas de desenvolvimento e ser documentado.
+6. A interface deve ser simples, intuitiva e responsiva, garantindo boa experiência do usuário.
+   
+---
+
 ## 🎯 Objetivos do Projeto
 - **Coletar imagens** de microscópios ópticos por meio de uma câmera digital acoplada.
 - **Transmitir** o fluxo de vídeo **via Wi‑Fi** para um **servidor em nuvem**.
