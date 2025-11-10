@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   TouchableOpacity, 
@@ -8,30 +8,38 @@ import {
   Dimensions,
   Modal,
   Alert,
-  ImageBackground
+  Text
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Sharing from 'expo-sharing';
-import * as FileSystem from 'expo-file-system/legacy';
 import { colors, shadows, radius } from '../theme/colors';
 
 const { width, height } = Dimensions.get('window');
 const imageSize = (width - 60) / 3;
 
-const captures = [
-  { id: '1', source: require('../assets/video/scrsht1.jpg') },
-  { id: '2', source: require('../assets/video/scrsht2.jpg') },
-  { id: '3', source: require('../assets/video/scrsht3.jpg') },
-  { id: '4', source: require('../assets/video/scrsht4.jpg') },
-  { id: '5', source: require('../assets/video/scrsht5.jpg') },
-  { id: '6', source: require('../assets/video/scrsht6.jpg') },
+// Imagens de exemplo dos assets
+const assetCaptures = [
+  { id: 'asset1', source: require('../assets/video/scrsht1.jpg'), isAsset: true },
+  { id: 'asset2', source: require('../assets/video/scrsht2.jpg'), isAsset: true },
+  { id: 'asset3', source: require('../assets/video/scrsht3.jpg'), isAsset: true },
+  { id: 'asset4', source: require('../assets/video/scrsht4.jpg'), isAsset: true },
+  { id: 'asset5', source: require('../assets/video/scrsht5.jpg'), isAsset: true },
+  { id: 'asset6', source: require('../assets/video/scrsht6.jpg'), isAsset: true },
 ];
 
-export default function GalleryScreen({ onVideo }) {
+export default function GalleryScreen({ onVideo, captures = [] }) {
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const handleImagePress = (item) => setSelectedImage(item);
-  const closeModal = () => setSelectedImage(null);
+  // Combinar capturas reais com imagens de exemplo
+  const allCaptures = [...captures, ...assetCaptures];
+
+  const handleImagePress = (item) => {
+    setSelectedImage(item);
+  };
+
+  const closeModal = () => {
+    setSelectedImage(null);
+  };
 
   const handleShare = async () => {
     try {
@@ -41,82 +49,99 @@ export default function GalleryScreen({ onVideo }) {
         return;
       }
 
-      const asset = selectedImage.source;
-      const assetModule = Image.resolveAssetSource(asset);
-      const fileUri = `${FileSystem.cacheDirectory}share_image_${selectedImage.id}.jpg`;
+      if (selectedImage.isAsset) {
+        // Imagem dos assets - não pode compartilhar direto
+        Alert.alert('Info', 'Esta é uma imagem de exemplo');
+        return;
+      }
 
-      await FileSystem.downloadAsync(assetModule.uri, fileUri);
-      await Sharing.shareAsync(fileUri, {
+      // Compartilhar captura real
+      await Sharing.shareAsync(selectedImage.uri, {
         mimeType: 'image/jpeg',
-        dialogTitle: 'Compartilhar imagem',
+        dialogTitle: 'Compartilhar captura',
       });
+
+      console.log('Compartilhado com sucesso');
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível compartilhar a imagem');
       console.error('Erro ao compartilhar:', error);
     }
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.imageContainer}
-      activeOpacity={0.7}
-      onPress={() => handleImagePress(item)}
-    >
-      <Image 
-        source={item.source}
-        style={styles.image}
-        resizeMode="cover"
-      />
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    const imageSource = item.isAsset ? item.source : { uri: item.uri };
+    
+    return (
+      <TouchableOpacity 
+        style={styles.imageContainer}
+        activeOpacity={0.7}
+        onPress={() => handleImagePress(item)}
+      >
+        <Image 
+          source={imageSource}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        {!item.isAsset && (
+          <View style={styles.capturedBadge}>
+            <Ionicons name="camera" size={12} color="#fff" />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <ImageBackground
-      source={require('../assets/background.png')}
-      style={styles.background}
-      imageStyle={styles.backgroundImage}
-    >
-      <View style={styles.container}>
-        <View style={styles.logoWrapper}>
-          <Image 
-            source={require('../assets/logo_long.png')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+    <View style={styles.container}>
+      <View style={styles.logoWrapper}>
+        <Image 
+          source={require('../assets/logo_long.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
+      <TouchableOpacity 
+        style={styles.videoButton}
+        onPress={onVideo}
+        activeOpacity={0.7}
+      >
+        <Ionicons name="videocam" size={28} color={colors.light.foreground} />
+      </TouchableOpacity>
+
+      {allCaptures.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="images-outline" size={80} color={colors.light.muted} />
+          <Text style={styles.emptyText}>Nenhuma captura ainda</Text>
+          <Text style={styles.emptySubtext}>Capture frames do vídeo</Text>
         </View>
-
-        <TouchableOpacity 
-          style={styles.videoButton}
-          onPress={onVideo}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="videocam" size={28} color={colors.light.foreground} />
-        </TouchableOpacity>
-
+      ) : (
         <FlatList
-          data={captures}
+          data={allCaptures}
           renderItem={renderItem}
           keyExtractor={(item) => item.id}
           numColumns={3}
           contentContainerStyle={styles.gridContainer}
           showsVerticalScrollIndicator={false}
         />
+      )}
 
-        <Modal
-          visible={selectedImage !== null}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={closeModal}
-        >
-          <View style={styles.modalContainer}>
-            <TouchableOpacity 
-              style={styles.modalCloseButton}
-              onPress={closeModal}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="close" size={30} color={colors.light.primaryForeground} />
-            </TouchableOpacity>
+      <Modal
+        visible={selectedImage !== null}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableOpacity 
+            style={styles.modalCloseButton}
+            onPress={closeModal}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="close" size={30} color={colors.light.primaryForeground} />
+          </TouchableOpacity>
 
+          {selectedImage && !selectedImage.isAsset && (
             <TouchableOpacity 
               style={styles.modalShareButton}
               onPress={handleShare}
@@ -124,32 +149,25 @@ export default function GalleryScreen({ onVideo }) {
             >
               <Ionicons name="share-social" size={28} color={colors.light.primaryForeground} />
             </TouchableOpacity>
+          )}
 
-            {selectedImage && (
-              <Image 
-                source={selectedImage.source}
-                style={styles.fullImage}
-                resizeMode="contain"
-              />
-            )}
-          </View>
-        </Modal>
-      </View>
-    </ImageBackground>
+          {selectedImage && (
+            <Image 
+              source={selectedImage.isAsset ? selectedImage.source : { uri: selectedImage.uri }}
+              style={styles.fullImage}
+              resizeMode="contain"
+            />
+          )}
+        </View>
+      </Modal>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    backgroundColor: colors.light.background,
-  },
-  backgroundImage: {
-    opacity: 0.12,
-    resizeMode: 'cover',
-  },
   container: {
     flex: 1,
+    backgroundColor: colors.light.background,
   },
   logoWrapper: {
     position: 'absolute',
@@ -165,7 +183,7 @@ const styles = StyleSheet.create({
   },
   videoButton: {
     position: 'absolute',
-    top: 80,
+    top: 50,
     right: 20,
     zIndex: 11,
     padding: 10,
@@ -189,6 +207,31 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
+  },
+  capturedBadge: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: colors.light.primary,
+    borderRadius: 12,
+    padding: 4,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 190,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.light.foreground,
+    marginTop: 20,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: colors.light.mutedForeground,
+    marginTop: 8,
   },
   modalContainer: {
     flex: 1,

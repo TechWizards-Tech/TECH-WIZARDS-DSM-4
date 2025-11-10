@@ -7,6 +7,11 @@ import { colors } from './theme/colors';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('splash');
+  const [captures, setCaptures] = useState([]);
+
+  const handleNewCapture = (captureData) => {
+    setCaptures(prev => [captureData, ...prev]);
+  };
 
   return (
     <View style={styles.container}>
@@ -15,11 +20,17 @@ export default function App() {
       )}
       
       {currentScreen === 'video' && (
-        <VideoPlayer onGallery={() => setCurrentScreen('gallery')} />
+        <VideoPlayer 
+          onGallery={() => setCurrentScreen('gallery')}
+          onNewCapture={handleNewCapture}
+        />
       )}
 
       {currentScreen === 'gallery' && (
-        <GalleryScreen onVideo={() => setCurrentScreen('video')} />
+        <GalleryScreen 
+          onVideo={() => setCurrentScreen('video')}
+          captures={captures}
+        />
       )}
     </View>
   );

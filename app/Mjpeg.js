@@ -32,7 +32,7 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
 
   // URL do servidor
   const SERVER_IP = '10.42.171.51';
-  const VIDEO_FEED_URL = `http://${SERVER_IP}:5000/video`;
+  const VIDEO_FEED_URL = `http://${SERVER_IP}:5000/video_feed`;
   const SNAPSHOT_URL = `http://${SERVER_IP}:5000/snapshot`;
 
   // Verifica conexão com o servidor
