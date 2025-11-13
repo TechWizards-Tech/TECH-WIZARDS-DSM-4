@@ -11,9 +11,29 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/logo.png"
+      "icon": "./assets/logo.png",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Este app precisa de acesso à câmera para capturar imagens.",
+        "NSPhotoLibraryUsageDescription": "Este app precisa de acesso à galeria para salvar imagens.",
+        "NSPhotoLibraryAddUsageDescription": "Este app precisa de permissão para salvar fotos na galeria."
+      }
     },
     "android": {
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "ACCESS_WIFI_STATE",
+        "CAMERA",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES",
+        "RECORD_AUDIO",
+        "MODIFY_AUDIO_SETTINGS",
+        "SYSTEM_ALERT_WINDOW",
+        "VIBRATE"
+      ],
+      "usesCleartextTraffic": true,
+      "networkSecurityConfig": "./network_security_config.xml",
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#ffffff"
@@ -29,7 +49,13 @@
       }
     },
     "plugins": [
-      "expo-video"
+      "expo-video",
+      [
+        "expo-file-system",
+        {
+          "photosPermission": "Permitir que $(PRODUCT_NAME) acesse suas fotos."
+        }
+      ]
     ]
   }
 }

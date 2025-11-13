@@ -201,8 +201,11 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
                   }}
                   style={styles.video}
                   javaScriptEnabled={true}
-                  domStorageEnabled={false}
+                  domStorageEnabled={true}
                   startInLoadingState={true}
+                  mixedContentMode="always"
+                  allowsInlineMediaPlayback={true}
+                  mediaPlaybackRequiresUserAction={false}
                   onLoadStart={() => console.log('WebView: Iniciando carregamento')}
                   onLoadEnd={() => console.log('WebView: Carregamento finalizado')}
                   onError={(syntheticEvent) => {
@@ -250,8 +253,11 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
                   }}
                   style={styles.video}
                   javaScriptEnabled={true}
-                  domStorageEnabled={false}
+                  domStorageEnabled={true}
                   startInLoadingState={true}
+                  mixedContentMode="always"
+                  allowsInlineMediaPlayback={true}
+                  mediaPlaybackRequiresUserAction={false}
                 />
               )
             )
@@ -297,6 +303,7 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
             ]}
             onPress={() => {
               setIsConnected(false);
+              setImageError(false);
               checkServerConnection();
             }}
             disabled={!isConnected}
