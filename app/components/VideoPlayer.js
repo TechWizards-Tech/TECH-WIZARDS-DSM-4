@@ -15,6 +15,7 @@ import { LogBox } from 'react-native';
 import { colors, shadows, radius } from '../theme/colors';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system/legacy';
+import * as MediaLibrary from 'expo-media-library';
 
 LogBox.ignoreLogs([
   'Video component from `expo-av` is deprecated',
@@ -22,7 +23,7 @@ LogBox.ignoreLogs([
 
 const { width } = Dimensions.get('window');
 
-export default function VideoPlayer({ onGallery, onNewCapture }) {
+export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPermission = false }) {
   const [isCapturing, setIsCapturing] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
@@ -108,16 +109,44 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
         throw new Error('Imagem capturada está muito pequena. Verifique o servidor.');
       }
 
-      // Adicionar à galeria
+      // Salvar na galeria do dispositivo (permanente)
+      let asset = null;
+      if (hasMediaLibraryPermission) {
+        try {
+          asset = await MediaLibrary.createAssetAsync(fileUri);
+          
+          // Criar ou obter o álbum "MicroWizards"
+          const album = await MediaLibrary.getAlbumAsync('MicroWizards');
+          if (album == null) {
+            await MediaLibrary.createAlbumAsync('MicroWizards', asset, false);
+          } else {
+            await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+          }
+          
+          console.log('Imagem salva permanentemente na galeria:', asset.uri);
+        } catch (mediaError) {
+          console.error('Erro ao salvar na galeria:', mediaError);
+          // Continua mesmo se falhar ao salvar na galeria
+        }
+      }
+
+      // Adicionar à galeria do app (para exibir na GalleryScreen)
       if (onNewCapture) {
         onNewCapture({
           id: timestamp.toString(),
-          uri: fileUri,
+          uri: fileUri, // Usa URI local para exibição (sempre funciona)
+          galleryUri: asset ? asset.uri : null, // URI da galeria para referência
           timestamp,
+          inGallery: hasMediaLibraryPermission && asset !== null,
         });
       }
 
-      Alert.alert('✓ Captura salva!', 'Frame capturado do servidor');
+      Alert.alert(
+        '✓ Captura salva!', 
+        hasMediaLibraryPermission 
+          ? 'Frame salvo na galeria do dispositivo' 
+          : 'Frame capturado (galeria não autorizada)'
+      );
       
     } catch (error) {
       console.error('Erro ao capturar frame:', error);

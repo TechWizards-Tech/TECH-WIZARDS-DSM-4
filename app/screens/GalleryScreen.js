@@ -27,7 +27,7 @@ const assetCaptures = [
   { id: 'asset6', source: require('../assets/video/scrsht6.jpg'), isAsset: true },
 ];
 
-export default function GalleryScreen({ onVideo, captures = [] }) {
+export default function GalleryScreen({ onVideo, captures = [], isLoading = false }) {
   const [selectedImage, setSelectedImage] = useState(null);
 
   // Combinar capturas reais com imagens de exemplo
@@ -55,7 +55,7 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
         return;
       }
 
-      // Compartilhar captura real
+      // Compartilhar captura real usando o URI local
       await Sharing.shareAsync(selectedImage.uri, {
         mimeType: 'image/jpeg',
         dialogTitle: 'Compartilhar captura',
@@ -83,8 +83,15 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
           resizeMode="cover"
         />
         {!item.isAsset && (
-          <View style={styles.capturedBadge}>
-            <Ionicons name="camera" size={12} color="#fff" />
+          <View style={styles.badgeContainer}>
+            <View style={styles.capturedBadge}>
+              <Ionicons name="camera" size={12} color="#fff" />
+            </View>
+            {item.inGallery && (
+              <View style={styles.galleryBadge}>
+                <Ionicons name="checkmark-circle" size={12} color="#fff" />
+              </View>
+            )}
           </View>
         )}
       </TouchableOpacity>
@@ -109,7 +116,12 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
         <Ionicons name="videocam" size={28} color={colors.light.foreground} />
       </TouchableOpacity>
 
-      {allCaptures.length === 0 ? (
+      {isLoading ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="hourglass-outline" size={80} color={colors.light.muted} />
+          <Text style={styles.emptyText}>Carregando capturas...</Text>
+        </View>
+      ) : allCaptures.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="images-outline" size={80} color={colors.light.muted} />
           <Text style={styles.emptyText}>Nenhuma captura ainda</Text>
@@ -142,13 +154,22 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
           </TouchableOpacity>
 
           {selectedImage && !selectedImage.isAsset && (
-            <TouchableOpacity 
-              style={styles.modalShareButton}
-              onPress={handleShare}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="share-social" size={28} color={colors.light.primaryForeground} />
-            </TouchableOpacity>
+            <>
+              <TouchableOpacity 
+                style={styles.modalShareButton}
+                onPress={handleShare}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="share-social" size={28} color={colors.light.primaryForeground} />
+              </TouchableOpacity>
+              
+              {selectedImage.inGallery && (
+                <View style={styles.modalInfoBadge}>
+                  <Ionicons name="checkmark-circle" size={16} color="#fff" />
+                  <Text style={styles.modalInfoText}>Salvo na galeria</Text>
+                </View>
+              )}
+            </>
           )}
 
           {selectedImage && (
@@ -208,11 +229,20 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  capturedBadge: {
+  badgeContainer: {
     position: 'absolute',
     top: 5,
     right: 5,
+    flexDirection: 'column',
+    gap: 4,
+  },
+  capturedBadge: {
     backgroundColor: colors.light.primary,
+    borderRadius: 12,
+    padding: 4,
+  },
+  galleryBadge: {
+    backgroundColor: '#4CAF50',
     borderRadius: 12,
     padding: 4,
   },
@@ -258,6 +288,25 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.primary,
     borderRadius: radius.lg * 2.5,
     ...shadows.light.md,
+  },
+  modalInfoBadge: {
+    position: 'absolute',
+    top: 120,
+    left: 20,
+    zIndex: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    backgroundColor: '#4CAF50',
+    borderRadius: radius.lg * 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    ...shadows.light.md,
+  },
+  modalInfoText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
   fullImage: {
     width: width,
