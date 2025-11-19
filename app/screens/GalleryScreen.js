@@ -8,14 +8,19 @@ import {
   Dimensions,
   Modal,
   Alert,
-  Text
+  Text,
+  ImageBackground,
+  StatusBar,
+  Platform,
+  SectionList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Sharing from 'expo-sharing';
 import { colors, shadows, radius } from '../theme/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const { width, height } = Dimensions.get('window');
-const imageSize = (width - 60) / 3;
+const imageSize = (width - 48) / 3;
 
 // Imagens de exemplo dos assets
 const assetCaptures = [
@@ -29,9 +34,8 @@ const assetCaptures = [
 
 export default function GalleryScreen({ onVideo, captures = [], isLoading = false }) {
   const [selectedImage, setSelectedImage] = useState(null);
-
-  // Combinar capturas reais com imagens de exemplo
-  const allCaptures = [...captures, ...assetCaptures];
+  const [showAbout, setShowAbout] = useState(false);
+  const insets = useSafeAreaInsets();
 
   const handleImagePress = (item) => {
     setSelectedImage(item);
@@ -50,12 +54,10 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
       }
 
       if (selectedImage.isAsset) {
-        // Imagem dos assets - não pode compartilhar direto
         Alert.alert('Info', 'Esta é uma imagem de exemplo');
         return;
       }
 
-      // Compartilhar captura real usando o URI local
       await Sharing.shareAsync(selectedImage.uri, {
         mimeType: 'image/jpeg',
         dialogTitle: 'Compartilhar captura',
@@ -74,7 +76,7 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
     return (
       <TouchableOpacity 
         style={styles.imageContainer}
-        activeOpacity={0.7}
+        activeOpacity={0.8}
         onPress={() => handleImagePress(item)}
       >
         <Image 
@@ -82,61 +84,143 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
           style={styles.image}
           resizeMode="cover"
         />
-        {!item.isAsset && (
-          <View style={styles.badgeContainer}>
-            <View style={styles.capturedBadge}>
-              <Ionicons name="camera" size={12} color="#fff" />
-            </View>
-            {item.inGallery && (
-              <View style={styles.galleryBadge}>
-                <Ionicons name="checkmark-circle" size={12} color="#fff" />
-              </View>
-            )}
+        {!item.isAsset && item.inGallery && (
+          <View style={styles.galleryBadge}>
+            <Ionicons name="checkmark-circle" size={12} color="#fff" />
           </View>
         )}
       </TouchableOpacity>
     );
   };
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.logoWrapper}>
-        <Image 
-          source={require('../assets/logo_long.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+  // Criar grid manual (3 colunas)
+  const renderRow = (items) => {
+    return (
+      <View style={styles.row}>
+        {items.map(item => item && (
+          <View key={item.id}>
+            {renderItem({ item })}
+          </View>
+        ))}
       </View>
+    );
+  };
 
-      <TouchableOpacity 
-        style={styles.videoButton}
-        onPress={onVideo}
-        activeOpacity={0.7}
-      >
-        <Ionicons name="videocam" size={28} color={colors.light.foreground} />
-      </TouchableOpacity>
+  // Agrupar em linhas de 3
+  const groupIntoRows = (data) => {
+    const rows = [];
+    for (let i = 0; i < data.length; i += 3) {
+      rows.push(data.slice(i, i + 3));
+    }
+    return rows;
+  };
 
-      {isLoading ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="hourglass-outline" size={80} color={colors.light.muted} />
-          <Text style={styles.emptyText}>Carregando capturas...</Text>
+  const captureRows = groupIntoRows(captures);
+  const exampleRows = groupIntoRows(assetCaptures);
+
+  return (
+    <ImageBackground 
+      source={require('../assets/background.png')}
+      style={styles.background}
+      imageStyle={styles.backgroundImage}
+    >
+      <StatusBar barStyle="dark-content" backgroundColor={colors.light.background} translucent={false} />
+      
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Image 
+            source={require('../assets/logo_long.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+          <Text style={styles.headerTitle}>Galeria</Text>
         </View>
-      ) : allCaptures.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Ionicons name="images-outline" size={80} color={colors.light.muted} />
-          <Text style={styles.emptyText}>Nenhuma captura ainda</Text>
-          <Text style={styles.emptySubtext}>Capture frames do vídeo</Text>
+
+        {isLoading ? (
+          <View style={styles.emptyContainer}>
+            <Ionicons name="hourglass-outline" size={80} color={colors.light.muted} />
+            <Text style={styles.emptyText}>Carregando capturas...</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={[1]} // Dummy data para usar FlatList
+            renderItem={() => (
+              <View>
+                {/* Seção: Minhas Capturas */}
+                {captures.length > 0 ? (
+                  <View style={styles.section}>
+                    <View style={styles.sectionHeader}>
+                      <Text style={styles.sectionTitle}>Minhas Capturas</Text>
+                      <View style={styles.badge}>
+                        <Text style={styles.badgeText}>{captures.length}</Text>
+                      </View>
+                    </View>
+                    {captureRows.map((row, index) => (
+                      <View key={`capture-row-${index}`}>
+                        {renderRow(row)}
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  <View style={styles.emptySection}>
+                    <Ionicons name="images-outline" size={48} color={colors.light.muted} />
+                    <Text style={styles.emptySectionText}>Nenhuma captura ainda</Text>
+                    <Text style={styles.emptySectionSubtext}>Capture frames do microscópio</Text>
+                  </View>
+                )}
+
+                {/* Seção: Exemplos */}
+                <View style={styles.section}>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Exemplos</Text>
+                    <Ionicons name="star-outline" size={16} color={colors.light.mutedForeground} />
+                  </View>
+                  {exampleRows.map((row, index) => (
+                    <View key={`example-row-${index}`}>
+                      {renderRow(row)}
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
+            contentContainerStyle={styles.scrollContainer}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+
+        <View style={[
+          styles.bottomNav,
+          { paddingBottom: Math.max(insets.bottom, 12) }
+        ]}>
+          <TouchableOpacity 
+            style={styles.navButton}
+            onPress={onVideo}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="videocam" size={28} color={colors.light.foreground} />
+            <Text style={styles.navLabel}>Vídeo</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.navButton}
+            activeOpacity={0.7}
+          >
+            <View style={styles.activeIndicator}>
+              <Ionicons name="images" size={28} color={colors.light.primaryForeground} />
+            </View>
+            <Text style={[styles.navLabel, styles.navLabelActive]}>Galeria</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={styles.navButton}
+            onPress={() => setShowAbout(true)}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="information-circle" size={28} color={colors.light.foreground} />
+            <Text style={styles.navLabel}>Sobre</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
-        <FlatList
-          data={allCaptures}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-          contentContainerStyle={styles.gridContainer}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+      </View>
 
       <Modal
         visible={selectedImage !== null}
@@ -145,12 +229,14 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
         onRequestClose={closeModal}
       >
         <View style={styles.modalContainer}>
+          <StatusBar hidden />
+          
           <TouchableOpacity 
             style={styles.modalCloseButton}
             onPress={closeModal}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <Ionicons name="close" size={30} color={colors.light.primaryForeground} />
+            <Ionicons name="close" size={32} color="white" />
           </TouchableOpacity>
 
           {selectedImage && !selectedImage.isAsset && (
@@ -158,9 +244,9 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
               <TouchableOpacity 
                 style={styles.modalShareButton}
                 onPress={handleShare}
-                activeOpacity={0.7}
+                activeOpacity={0.8}
               >
-                <Ionicons name="share-social" size={28} color={colors.light.primaryForeground} />
+                <Ionicons name="share-social" size={28} color="white" />
               </TouchableOpacity>
               
               {selectedImage.inGallery && (
@@ -181,46 +267,124 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
           )}
         </View>
       </Modal>
-    </View>
+
+      {/* Modal Sobre o Projeto */}
+      <Modal
+        visible={showAbout}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAbout(false)}
+      >
+        <View style={styles.aboutModalOverlay}>
+          <View style={styles.aboutModalContent}>
+            <View style={styles.aboutHeader}>
+              <Ionicons name="information-circle" size={48} color={colors.light.primary} />
+              <Text style={styles.aboutTitle}>Sobre o Projeto</Text>
+            </View>
+
+            <View style={styles.aboutBody}>
+              <Text style={styles.aboutText}>
+                Sistema desenvolvido pela equipe <Text style={styles.aboutBold}>Tech Wizards</Text> (FATEC Jacareí) para transmitir, em tempo real, imagens de microscópio para web e mobile.
+              </Text>
+              
+              <Text style={styles.aboutText}>
+                A câmera acoplada ao microscópio envia o vídeo para um servidor, permitindo que vários alunos visualizem a mesma amostra simultaneamente e capturem imagens com facilidade.
+              </Text>
+
+              <View style={styles.aboutFooter}>
+                <Ionicons name="school" size={20} color={colors.light.mutedForeground} />
+                <Text style={styles.aboutFooterText}>FATEC Jacareí</Text>
+              </View>
+
+              <View style={styles.aboutFooter}>
+                <Ionicons name="people" size={20} color={colors.light.mutedForeground} />
+                <Text style={styles.aboutFooterText}>Tech Wizards</Text>
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.aboutCloseButton}
+              onPress={() => setShowAbout(false)}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.aboutCloseButtonText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  background: {
     flex: 1,
     backgroundColor: colors.light.background,
   },
-  logoWrapper: {
-    position: 'absolute',
-    top: 50,
-    left: 0,
-    right: 0,
+  backgroundImage: {
+    opacity: 0.15,
+    resizeMode: 'cover',
+  },
+  container: {
+    flex: 1,
+  },
+  header: {
+    paddingTop: 20,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
     alignItems: 'center',
-    zIndex: 10,
   },
   logo: {
     height: 120,
-    width: 400,
+    width: 360,
+    marginBottom: 8,
   },
-  videoButton: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 11,
-    padding: 10,
-    backgroundColor: colors.light.card,
-    borderRadius: radius.lg * 2.5,
-    ...shadows.light.sm,
+  headerTitle: {
+    color: colors.light.foreground,
+    fontSize: 24,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
-  gridContainer: {
-    padding: 15,
-    paddingTop: 190,
+  scrollContainer: {
+    paddingBottom: 100,
+  },
+  section: {
+    marginTop: 8,
+    paddingHorizontal: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.light.foreground,
+    letterSpacing: 0.3,
+  },
+  badge: {
+    backgroundColor: colors.light.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  badgeText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  row: {
+    flexDirection: 'row',
+    marginBottom: 8,
+    gap: 8,
   },
   imageContainer: {
     width: imageSize,
     height: imageSize,
-    margin: 5,
-    borderRadius: radius.lg,
+    borderRadius: radius.md,
     overflow: 'hidden',
     backgroundColor: colors.light.muted,
     ...shadows.light.sm,
@@ -229,75 +393,125 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  badgeContainer: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-    flexDirection: 'column',
-    gap: 4,
-  },
-  capturedBadge: {
-    backgroundColor: colors.light.primary,
-    borderRadius: 12,
-    padding: 4,
-  },
   galleryBadge: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
     backgroundColor: '#4CAF50',
-    borderRadius: 12,
-    padding: 4,
+    borderRadius: 10,
+    padding: 3,
+    ...shadows.light.sm,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 190,
+    paddingBottom: 100,
   },
   emptyText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: '600',
     color: colors.light.foreground,
     marginTop: 20,
+    letterSpacing: 0.3,
   },
-  emptySubtext: {
+  emptySection: {
+    alignItems: 'center',
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  emptySectionText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.light.foreground,
+    marginTop: 12,
+  },
+  emptySectionSubtext: {
     fontSize: 14,
     color: colors.light.mutedForeground,
-    marginTop: 8,
+    marginTop: 4,
+  },
+  bottomNav: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
+    paddingTop: 12,
+    paddingHorizontal: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(226, 232, 240, 0.6)',
+    ...shadows.light.md,
+  },
+  navButton: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+    borderRadius: radius.md,
+  },
+  activeIndicator: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.light.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 4,
+    ...shadows.light.md,
+  },
+  navLabel: {
+    color: colors.light.foreground,
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 4,
+    letterSpacing: 0.3,
+  },
+  navLabelActive: {
+    fontWeight: '700',
   },
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+    backgroundColor: 'rgba(0, 0, 0, 0.98)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalCloseButton: {
     position: 'absolute',
-    top: 60,
+    top: 50,
     right: 20,
     zIndex: 10,
-    padding: 10,
-    backgroundColor: colors.light.primary,
-    borderRadius: radius.lg * 2.5,
-    ...shadows.light.md,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.light.lg,
   },
   modalShareButton: {
     position: 'absolute',
-    top: 60,
+    top: 50,
     left: 20,
     zIndex: 10,
-    padding: 10,
-    backgroundColor: colors.light.primary,
-    borderRadius: radius.lg * 2.5,
-    ...shadows.light.md,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.light.lg,
   },
   modalInfoBadge: {
     position: 'absolute',
-    top: 120,
+    top: 110,
     left: 20,
     zIndex: 10,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 6,
     backgroundColor: '#4CAF50',
-    borderRadius: radius.lg * 2,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -306,10 +520,77 @@ const styles = StyleSheet.create({
   modalInfoText: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
+    letterSpacing: 0.3,
   },
   fullImage: {
     width: width,
     height: height,
+  },
+  
+  // About Modal styles
+  aboutModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  aboutModalContent: {
+    backgroundColor: colors.light.background,
+    borderRadius: radius.xl,
+    padding: 24,
+    width: '100%',
+    maxWidth: 500,
+    ...shadows.light.xl,
+  },
+  aboutHeader: {
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 12,
+  },
+  aboutTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.light.foreground,
+    letterSpacing: 0.3,
+  },
+  aboutBody: {
+    gap: 16,
+    marginBottom: 24,
+  },
+  aboutText: {
+    fontSize: 15,
+    lineHeight: 24,
+    color: colors.light.foreground,
+    textAlign: 'justify',
+  },
+  aboutBold: {
+    fontWeight: '700',
+    color: colors.light.primary,
+  },
+  aboutFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 8,
+  },
+  aboutFooterText: {
+    fontSize: 14,
+    color: colors.light.mutedForeground,
+    fontWeight: '600',
+  },
+  aboutCloseButton: {
+    backgroundColor: colors.light.primary,
+    paddingVertical: 14,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    ...shadows.light.md,
+  },
+  aboutCloseButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
 });

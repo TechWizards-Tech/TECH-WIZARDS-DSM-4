@@ -11,7 +11,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "icon": "./assets/logo.png",
+      "icon": "./assets/icon.png",
       "infoPlist": {
         "NSCameraUsageDescription": "Este app precisa de acesso à câmera para capturar imagens.",
         "NSPhotoLibraryUsageDescription": "Este app precisa de acesso à galeria para salvar imagens.",
