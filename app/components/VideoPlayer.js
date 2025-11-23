@@ -15,6 +15,7 @@ import { LogBox } from 'react-native';
 import { colors, shadows, radius } from '../theme/colors';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system/legacy';
+import LogoLong from '../assets/logo_long.png';
 
 LogBox.ignoreLogs([
   'Video component from `expo-av` is deprecated',
@@ -144,7 +145,7 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
       {/* Logo */}
       <View style={styles.logoWrapper}>
         <Image 
-          source={require('../assets/logo_long.png')}
+          source={LogoLong}
           style={styles.logo}
           resizeMode="contain"
         />
