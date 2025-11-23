@@ -3,7 +3,7 @@ import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
+const { width: screenWidth} = Dimensions.get('window');
 
 export default function VideoScreen({ navigation }) {
   // Replace YOUR_VIDEO_ID with your actual YouTube video ID
