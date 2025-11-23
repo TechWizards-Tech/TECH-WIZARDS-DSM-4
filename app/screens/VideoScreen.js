@@ -3,16 +3,17 @@ import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { WebView } from 'react-native-webview';
 
-const { width: screenWidth} = Dimensions.get('window');
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function VideoScreen({ navigation }) {
   // Replace YOUR_VIDEO_ID with your actual YouTube video ID
-  const youtubeUrl = "https://www.youtube.com/embed/rNSEkDGKnwU?rel=0&modestbranding=1";
+  const youtubeUrl =
+    'https://www.youtube.com/embed/rNSEkDGKnwU?rel=0&modestbranding=1';
 
   return (
     <View style={styles.container}>
       {/* Back button in top left */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.backButton}
         onPress={() => navigation.goBack()}
       >
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
   videoContainer: {
     width: '100%', // Takes full width but limited by maxWidth
     maxWidth: screenWidth * 0.9, // 90% of screen width
-    height: (screenWidth * 0.9) * (9/16), // 16:9 aspect ratio (standard YouTube)
+    height: screenWidth * 0.9 * (9 / 16), // 16:9 aspect ratio (standard YouTube)
     backgroundColor: '#000',
     borderRadius: 12,
     overflow: 'hidden',

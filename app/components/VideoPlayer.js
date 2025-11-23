@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { 
-  View, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Dimensions, 
-  Alert, 
-  Animated, 
-  Image, 
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Dimensions,
+  Alert,
+  Animated,
+  Image,
   Text,
   Platform,
 } from 'react-native';
@@ -17,9 +17,7 @@ import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system/legacy';
 import LogoLong from '../assets/logo_long.png';
 
-LogBox.ignoreLogs([
-  'Video component from `expo-av` is deprecated',
-]);
+LogBox.ignoreLogs(['Video component from `expo-av` is deprecated']);
 
 const { width } = Dimensions.get('window');
 
@@ -39,7 +37,7 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
   // Verifica conexão com o servidor
   useEffect(() => {
     checkServerConnection();
-    
+
     const interval = setInterval(() => {
       checkServerConnection();
     }, 5000);
@@ -49,9 +47,9 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
 
   const checkServerConnection = async () => {
     try {
-      await fetch(`http://${SERVER_IP}:5000/`, { 
+      await fetch(`http://${SERVER_IP}:5000/`, {
         method: 'GET',
-        timeout: 3000 
+        timeout: 3000,
       });
       setIsConnected(true);
       setConnectionError(false);
@@ -87,9 +85,11 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
       // Criar diretório de capturas se não existir
       const capturesDir = `${FileSystem.documentDirectory}captures/`;
       const dirInfo = await FileSystem.getInfoAsync(capturesDir);
-      
+
       if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(capturesDir, { intermediates: true });
+        await FileSystem.makeDirectoryAsync(capturesDir, {
+          intermediates: true,
+        });
       }
 
       // Baixar a imagem do servidor
@@ -97,8 +97,11 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
       const filename = `capture_${timestamp}.jpg`;
       const fileUri = `${capturesDir}${filename}`;
 
-      const downloadResult = await FileSystem.downloadAsync(SNAPSHOT_URL, fileUri);
-      
+      const downloadResult = await FileSystem.downloadAsync(
+        SNAPSHOT_URL,
+        fileUri,
+      );
+
       console.log('Imagem baixada:', downloadResult.uri);
 
       // Verificar tamanho do arquivo
@@ -106,7 +109,9 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
       console.log('Tamanho do arquivo:', fileInfo.size, 'bytes');
 
       if (fileInfo.size < 1000) {
-        throw new Error('Imagem capturada está muito pequena. Verifique o servidor.');
+        throw new Error(
+          'Imagem capturada está muito pequena. Verifique o servidor.',
+        );
       }
 
       // Adicionar à galeria
@@ -119,12 +124,11 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
       }
 
       Alert.alert('✓ Captura salva!', 'Frame capturado do servidor');
-      
     } catch (error) {
       console.error('Erro ao capturar frame:', error);
       Alert.alert(
-        'Erro ao capturar', 
-        'Não foi possível capturar: ' + error.message
+        'Erro ao capturar',
+        'Não foi possível capturar: ' + error.message,
       );
     } finally {
       setIsCapturing(false);
@@ -134,32 +138,27 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
   return (
     <View style={styles.container}>
       {/* Efeito de flash na captura */}
-      <Animated.View 
-        style={[
-          styles.flash,
-          { opacity: flashAnim }
-        ]} 
+      <Animated.View
+        style={[styles.flash, { opacity: flashAnim }]}
         pointerEvents="none"
       />
 
       {/* Logo */}
       <View style={styles.logoWrapper}>
-        <Image 
-          source={LogoLong}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <Image source={LogoLong} style={styles.logo} resizeMode="contain" />
       </View>
 
       {/* Indicador de Conexão */}
-      <View style={[
-        styles.connectionIndicator, 
-        { backgroundColor: isConnected ? '#4CAF50' : '#f44336' }
-      ]}>
-        <Ionicons 
-          name={isConnected ? "wifi" : "wifi-outline"} 
-          size={16} 
-          color="white" 
+      <View
+        style={[
+          styles.connectionIndicator,
+          { backgroundColor: isConnected ? '#4CAF50' : '#f44336' },
+        ]}
+      >
+        <Ionicons
+          name={isConnected ? 'wifi' : 'wifi-outline'}
+          size={16}
+          color="white"
         />
         <Text style={styles.connectionText}>
           {isConnected ? 'Conectado' : 'Offline'}
@@ -167,7 +166,7 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
       </View>
 
       {/* Botão Galeria */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.galleryButton}
         onPress={onGallery}
         activeOpacity={0.7}
@@ -182,8 +181,8 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
             isMobile ? (
               <>
                 <WebView
-                  originWhitelist={["*"]}
-                  source={{ 
+                  originWhitelist={['*']}
+                  source={{
                     html: `
                       <!DOCTYPE html>
                       <html>
@@ -198,7 +197,7 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
                         <img src="${VIDEO_FEED_URL}" onerror="console.error('Erro ao carregar imagem')" />
                       </body>
                       </html>
-                    `
+                    `,
                   }}
                   style={styles.video}
                   javaScriptEnabled={true}
@@ -207,8 +206,12 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
                   mixedContentMode="always"
                   allowsInlineMediaPlayback={true}
                   mediaPlaybackRequiresUserAction={false}
-                  onLoadStart={() => console.log('WebView: Iniciando carregamento')}
-                  onLoadEnd={() => console.log('WebView: Carregamento finalizado')}
+                  onLoadStart={() =>
+                    console.log('WebView: Iniciando carregamento')
+                  }
+                  onLoadEnd={() =>
+                    console.log('WebView: Carregamento finalizado')
+                  }
                   onError={(syntheticEvent) => {
                     const { nativeEvent } = syntheticEvent;
                     console.error('Erro no WebView:', nativeEvent);
@@ -219,24 +222,26 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
                   <Text style={styles.fallbackBadgeText}>AO VIVO</Text>
                 </View>
               </>
+            ) : !imageError ? (
+              <Image
+                source={{ uri: VIDEO_FEED_URL }}
+                style={styles.video}
+                resizeMode="contain"
+                onLoadStart={() => console.log('Carregando vídeo...')}
+                onLoad={() => console.log('Vídeo carregado!')}
+                onError={(error) => {
+                  console.error(
+                    'Erro no vídeo (Image):',
+                    error.nativeEvent?.error || error,
+                  );
+                  setImageError(true);
+                }}
+              />
             ) : (
-              !imageError ? (
-                <Image
-                  source={{ uri: VIDEO_FEED_URL }}
-                  style={styles.video}
-                  resizeMode="contain"
-                  onLoadStart={() => console.log('Carregando vídeo...')}
-                  onLoad={() => console.log('Vídeo carregado!')}
-                  onError={(error) => {
-                    console.error('Erro no vídeo (Image):', error.nativeEvent?.error || error);
-                    setImageError(true);
-                  }}
-                />
-              ) : (
-                <WebView
-                  originWhitelist={["*"]}
-                  source={{ 
-                    html: `
+              <WebView
+                originWhitelist={['*']}
+                source={{
+                  html: `
                       <!DOCTYPE html>
                       <html>
                       <head>
@@ -250,23 +255,24 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
                         <img src="${VIDEO_FEED_URL}" onerror="console.error('Erro ao carregar imagem')" />
                       </body>
                       </html>
-                    `
-                  }}
-                  style={styles.video}
-                  javaScriptEnabled={true}
-                  domStorageEnabled={true}
-                  startInLoadingState={true}
-                  mixedContentMode="always"
-                  allowsInlineMediaPlayback={true}
-                  mediaPlaybackRequiresUserAction={false}
-                />
-              )
+                    `,
+                }}
+                style={styles.video}
+                javaScriptEnabled={true}
+                domStorageEnabled={true}
+                startInLoadingState={true}
+                mixedContentMode="always"
+                allowsInlineMediaPlayback={true}
+                mediaPlaybackRequiresUserAction={false}
+              />
             )
           ) : (
             <View style={styles.placeholder}>
               <Ionicons name="videocam-off" size={50} color="#666" />
               <Text style={styles.placeholderText}>
-                {connectionError ? 'Erro de conexão com o servidor' : 'Conectando...'}
+                {connectionError
+                  ? 'Erro de conexão com o servidor'
+                  : 'Conectando...'}
               </Text>
               <Text style={styles.placeholderSubtext}>
                 Verifique se o servidor está rodando em {SERVER_IP}:5000
@@ -274,33 +280,33 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
             </View>
           )}
         </View>
-        
+
         {/* Container para os botões */}
         <View style={styles.buttonsContainer}>
           {/* Botão de Captura */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
-              styles.captureButton, 
-              (isCapturing || !isConnected) && styles.captureButtonDisabled
+              styles.captureButton,
+              (isCapturing || !isConnected) && styles.captureButtonDisabled,
             ]}
             onPress={captureFrame}
             disabled={isCapturing || !isConnected}
             activeOpacity={0.7}
           >
             <View style={styles.captureButtonInner}>
-              <Ionicons 
-                name="camera" 
-                size={32} 
-                color={colors.light.primaryForeground} 
+              <Ionicons
+                name="camera"
+                size={32}
+                color={colors.light.primaryForeground}
               />
             </View>
           </TouchableOpacity>
 
           {/* Botão de Refresh */}
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
-              styles.refreshButton, 
-              !isConnected && styles.captureButtonDisabled
+              styles.refreshButton,
+              !isConnected && styles.captureButtonDisabled,
             ]}
             onPress={() => {
               setIsConnected(false);
@@ -311,10 +317,10 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
             activeOpacity={0.7}
           >
             <View style={styles.refreshButtonInner}>
-              <Ionicons 
-                name="refresh" 
-                size={32} 
-                color={colors.light.primaryForeground} 
+              <Ionicons
+                name="refresh"
+                size={32}
+                color={colors.light.primaryForeground}
               />
             </View>
           </TouchableOpacity>

@@ -1,5 +1,11 @@
 import React, { useRef } from 'react';
-import { View, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
+  Animated,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Logo from '../assets/logo.png';
 
@@ -36,7 +42,7 @@ export default function HomeScreen({ onPlay, onGallery }) {
   return (
     <View style={styles.container}>
       {/* Botão da galeria */}
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.galleryButton}
         onPress={onGallery}
         activeOpacity={0.7}
@@ -44,23 +50,16 @@ export default function HomeScreen({ onPlay, onGallery }) {
         <Ionicons name="images" size={28} color="#000" />
       </TouchableOpacity>
 
-      <TouchableOpacity 
-        onPress={handlePress}
-        activeOpacity={0.9}
-      >
-        <Animated.View 
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.9}>
+        <Animated.View
           style={[
             styles.logoContainer,
             {
               transform: [{ scale: scaleAnim }],
-            }
+            },
           ]}
         >
-          <Image 
-            source={Logo} 
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={Logo} style={styles.logo} resizeMode="contain" />
         </Animated.View>
       </TouchableOpacity>
     </View>

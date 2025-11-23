@@ -2,13 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   build:
-    name: Install, Lint and Test
+    name: Install, Lint, Test and Security Audit
     runs-on: ubuntu-latest
 
     steps:
@@ -20,19 +20,32 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: 'app/package-lock.json'
 
       - name: Install dependencies
+        working-directory: ./app
         run: |
           npm ci
         env:
           CI: true
 
       - name: Run linter
+        working-directory: ./app
         run: |
           npm run lint
 
-      - name: Run tests
+      - name: Run Prettier check
+        working-directory: ./app
+        run: npm run format
+
+      - name: Run tests with coverage
+        working-directory: ./app
         run: |
           npm test -- --runInBand
         env:
           CI: true
+
+      - name: Security audit
+        working-directory: ./app
+        run: |
+          npm audit --audit-level=moderate

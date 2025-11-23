@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<coverage generated="1763932085770" clover="3.2.0">
+  <project timestamp="1763932085770" name="All files">
+    <metrics statements="7" coveredstatements="7" conditionals="2" coveredconditionals="2" methods="3" coveredmethods="0" elements="12" coveredelements="9" complexity="0" loc="7" ncloc="7" packages="1" files="2" classes="2"/>
+    <file name="expo-build-winter.js" path="C:\Users\polly\OneDrive\Área de Trabalho\TECH-WIZARDS-DSM-4-new\TECH-WIZARDS-DSM-4\app\jest-mocks\expo-build-winter.js">
+      <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
+      <line num="4" count="2" type="stmt"/>
+      <line num="6" count="2" type="stmt"/>
+    </file>
+    <file name="expo-modules-core-web.js" path="C:\Users\polly\OneDrive\Área de Trabalho\TECH-WIZARDS-DSM-4-new\TECH-WIZARDS-DSM-4\app\jest-mocks\expo-modules-core-web.js">
+      <metrics statements="5" coveredstatements="5" conditionals="2" coveredconditionals="2" methods="3" coveredmethods="0"/>
+      <line num="2" count="2" type="cond" truecount="2" falsecount="0"/>
+      <line num="14" count="2" type="stmt"/>
+      <line num="15" count="2" type="stmt"/>
+      <line num="16" count="2" type="stmt"/>
+      <line num="18" count="2" type="stmt"/>
+    </file>
+  </project>
+</coverage>
