@@ -14,18 +14,22 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Use Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 18
 
       - name: Install dependencies
         working-directory: ./app
-        run: npm install
+        run: npm ci
 
-      - name: Run Lint
+      - name: Run ESLint
         working-directory: ./app
         run: npm run lint
+
+      - name: Run Prettier check
+        working-directory: ./app
+        run: npm run format
 
       - name: Run Tests
         working-directory: ./app
