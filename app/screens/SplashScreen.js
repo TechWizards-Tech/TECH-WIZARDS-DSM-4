@@ -1,6 +1,8 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Image, Animated, ImageBackground } from 'react-native';
 import { colors } from '../theme/colors';
+import BackgroundImg from '../assets/background.png';
+import Logo from '../assets/logo.png';
 
 export default function SplashScreen({ onFinish }) {
   const scaleAnim = useRef(new Animated.Value(0.6)).current;
@@ -49,7 +51,7 @@ export default function SplashScreen({ onFinish }) {
 
   return (
     <ImageBackground
-      source={require('../assets/background.png')}
+      source={BackgroundImg}
       style={styles.background}
       imageStyle={styles.backgroundImage}
     >
@@ -64,7 +66,7 @@ export default function SplashScreen({ onFinish }) {
           ]}
         >
           <Image
-            source={require('../assets/logo.png')}
+            source={Logo}
             style={styles.logo}
             resizeMode="contain"
           />

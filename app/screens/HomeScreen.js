@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { View, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Logo from '../assets/logo.png';
 
 export default function HomeScreen({ onPlay, onGallery }) {
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -56,7 +57,7 @@ export default function HomeScreen({ onPlay, onGallery }) {
           ]}
         >
           <Image 
-            source={require('../assets/logo.png')} 
+            source={Logo} 
             style={styles.logo}
             resizeMode="contain"
           />

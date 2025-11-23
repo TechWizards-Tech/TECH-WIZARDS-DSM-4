@@ -13,18 +13,25 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import * as Sharing from 'expo-sharing';
 import { colors, shadows, radius } from '../theme/colors';
+import LogoLong from '../assets/logo_long.png';
+import Scr1 from '../assets/video/scrsht1.jpg';
+import Scr2 from '../assets/video/scrsht2.jpg';
+import Scr3 from '../assets/video/scrsht3.jpg';
+import Scr4 from '../assets/video/scrsht4.jpg';
+import Scr5 from '../assets/video/scrsht5.jpg';
+import Scr6 from '../assets/video/scrsht6.jpg';
 
 const { width, height } = Dimensions.get('window');
 const imageSize = (width - 60) / 3;
 
 // Imagens de exemplo dos assets
 const assetCaptures = [
-  { id: 'asset1', source: require('../assets/video/scrsht1.jpg'), isAsset: true },
-  { id: 'asset2', source: require('../assets/video/scrsht2.jpg'), isAsset: true },
-  { id: 'asset3', source: require('../assets/video/scrsht3.jpg'), isAsset: true },
-  { id: 'asset4', source: require('../assets/video/scrsht4.jpg'), isAsset: true },
-  { id: 'asset5', source: require('../assets/video/scrsht5.jpg'), isAsset: true },
-  { id: 'asset6', source: require('../assets/video/scrsht6.jpg'), isAsset: true },
+  { id: 'asset1', source: Scr1, isAsset: true },
+  { id: 'asset2', source: Scr2, isAsset: true },
+  { id: 'asset3', source: Scr3, isAsset: true },
+  { id: 'asset4', source: Scr4, isAsset: true },
+  { id: 'asset5', source: Scr5, isAsset: true },
+  { id: 'asset6', source: Scr6, isAsset: true },
 ];
 
 export default function GalleryScreen({ onVideo, captures = [] }) {
@@ -95,7 +102,7 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
     <View style={styles.container}>
       <View style={styles.logoWrapper}>
         <Image 
-          source={require('../assets/logo_long.png')}
+          source={LogoLong}
           style={styles.logo}
           resizeMode="contain"
         />
