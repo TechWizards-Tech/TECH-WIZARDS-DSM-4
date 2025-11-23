@@ -2,44 +2,59 @@
 
 > Projeto acadêmico — FATEC Jacareí • Curso: **Desenvolvimento de Software Multiplataforma (DSM)** • **4º semestre**
 
-## 📌 Visão Geral
-Em aulas que utilizam **microscópios ópticos**, cada estudante normalmente precisa visualizar o experimento **individualmente** no equipamento, o que limita a experiência didática.  
-Este projeto propõe **especificar e construir** um sistema que permita **acoplar uma câmera digital** à ocular do microscópio e, utilizando uma **placa embarcada** (ex.: *Raspberry Pi*), **transmitir as imagens via Wi‑Fi** para um **servidor em nuvem**.  
-As imagens poderão ser visualizadas **em tempo real** por meio de um **aplicativo mobile** e de uma **interface web**, com opção de **salvar capturas** selecionadas pelo usuário.
+---
 
-> O sistema deverá funcionar com os microscópios ópticos disponíveis na **Fatec Jacareí**.
+## Objetivo do Projeto
+O sistema permite **coletar imagens e vídeos de microscópios ópticos** por meio de uma câmera digital acoplada, transmitir o fluxo de vídeo **em tempo real** via Wi‑Fi para um **servidor em nuvem**, e disponibilizar **aplicativo mobile** e **interface web** para visualização e armazenamento de **snapshots**.  
+O projeto atende aos microscópios disponíveis na Fatec Jacareí e visa **melhorar a experiência didática dos alunos**.
 
 ---
 
-## ✅ Requisitos Funcionais 
-1. O sistema deve capturar imagens e vídeos de microscópios ópticos por meio de uma câmera acoplada.
-2. O sistema deve transmitir o fluxo de vídeo em tempo real para um servidor em nuvem.
-3. O sistema deve disponibilizar uma aplicação web e uma aplicação mobile para visualização das imagens em tempo real.
-4. O sistema deve permitir ao usuário realizar capturas (snapshots) e salvar imagens selecionadas.
-5. O sistema deve garantir compatibilidade com os microscópios disponíveis na Fatec Jacareí.
-6. O sistema deve permitir múltiplos acessos simultâneos (ex.: toda a turma visualizando a mesma amostra).
-
-## ⚙ Requisitos Não Funcionais
-1. O sistema deve ser acessível em dispositivos móveis (Android) e navegadores web.
-2. A transmissão deve ter baixa latência, garantindo experiência em tempo real.
-3. O sistema deve ser escalável para suportar acessos simultâneos sem perda significativa de desempenho.
-4. A solução embarcada (Raspberry Pi) deve ser de fácil configuração e manutenção.
-5. O backend deve seguir boas práticas de desenvolvimento e ser documentado.
-6. A interface deve ser simples, intuitiva e responsiva, garantindo boa experiência do usuário.
-   
----
-
-## 🎯 Objetivos do Projeto
-- **Coletar imagens** de microscópios ópticos por meio de uma câmera digital acoplada.
-- **Transmitir** o fluxo de vídeo **via Wi‑Fi** para um **servidor em nuvem**.
-- Disponibilizar **aplicativo mobile** e **interface web** para **visualização em tempo real**.
-- Permitir **capturas de imagem** (snapshots) com **armazenamento** seguro.
-- Garantir **compatibilidade** com os microscópios da Fatec Jacareí.
-- Documentar arquitetura, instalação e uso para **reprodutibilidade**.
+## Tecnologias Utilizadas
+- **Embarcado**: Raspberry Pi OS, Python  
+- **Backend**: Python (Flask)  
+- **Web**: React  
+- **Mobile**: React Native  
+- **CI/CD e automação**: GitHub Actions, Jest, ESLint, Prettier, npm audit  
+- **Gerenciamento de tarefas**: Trello / GitHub Projects  
 
 ---
 
-## 🏗️ Arquitetura (proposta)
+## Fluxo de Desenvolvimento
+O versionamento segue o modelo de branches:
+
+- `main` → branch principal (protegida, apenas merges via Pull Request)  
+- `dev` → branch de integração  
+- `feature/` → branches de novas funcionalidades  
+
+---
+
+## Integração e Entrega Contínua (CI/CD do Projeto)
+
+O projeto possui **workflow automatizado** de CI que executa **lint, prettier e testes unitários** via GitHub Actions.  
+Todos os requisitos IEC.01 e IEC.02 foram cumpridos.  
+
+| Item | Descrição | Status (✓ / ✗) |
+|------|-----------|----------------|
+| 1 | Repositório privado com README inicial | ✓ |
+| 2 | Colaboradores adicionados | ✓ |
+| 3 | Branches configuradas: `main`, `dev`, `feature/` | ✓ |
+| 4 | Proteção da `main` configurada (apenas PRs) | ✓ |
+| 5 | Pull Request criado e revisado | ✓ |
+| 6 | GitHub Actions configurado com workflow inicial | ✓ |
+| 7 | ESLint integrado ao pipeline | ✓ |
+| 8 | Prettier integrado ao pipeline | ✓ |
+| 9 | Jest configurado com testes unitários e mocks | ✓ |
+| 10 | Pipeline executa automaticamente em commits/PRs | ✓ |
+| 11 | Pipeline falha em caso de erro de lint/teste | ✓ |
+| 12 | Documentação no README descrevendo o CI/CD | ✓ |
+| 13 | Tarefa “IEC.01 – Concluído” marcada no Trello/GitHub Projects | ✓ |
+| 14 | Testes avançados, cobertura e segurança (IEC.02) | ✓ |
+
+---
+
+## 🏗️ Arquitetura do Sistema (proposta)
+
 ```
 [Câmera acoplada ao microscópio]
             │
@@ -60,21 +75,35 @@ As imagens poderão ser visualizadas **em tempo real** por meio de um **aplicati
        [App Mobile]  +  [Web App]  ← tempo real e snapshots
 ```
 
-## 🧰 Tecnologias (sugestão)
-- **Embarcado**: Raspberry Pi OS, Python, 
-- **Backend**: Python (Flask)
-- **Web**: React
-- **Mobile**: React Native
+---
 
-## 👥 Equipe
-- Maria Eduarda Ferreira
-- Pollyana Roberta
-- Leandro Barbosa
-- Felipe Correa
-- Pamela Freitas
-- Raquel Massae
-- Bruna Caiado
-
-- **Infra**: Docker, Docker Compose, CI/CD simples (GitHub Actions).
+## Organização do Projeto
+- `/app` → código-fonte do aplicativo, mobile e web  
+- `/app/tests` → testes unitários e mocks (Jest)  
+- `.github/workflows` → configuração do GitHub Actions  
 
 ---
+
+## Equipe
+- Maria Eduarda Ferreira  (PO)
+- Pollyana Roberta  (SM)
+- Leandro Barbosa  (DEV)
+- Felipe Correa  (DEV)
+- Pamela Freitas  (DEV)
+- Raquel Massae  (DEV)
+- Bruna Caiado  (DEV)
+
+---
+
+## Status da Entrega
+- [x] IEC.01 – Pipeline inicial configurado  
+- [x] IEC.02 – Testes automatizados e segurança do pipeline  
+- [ ] IEC.03 – Em andamento
+
+---
+
+## Referências
+- [Documentação GitHub Actions](https://docs.github.com/en/actions)  
+- [ESLint Docs](https://eslint.org/docs/latest/)  
+- [Prettier Docs](https://prettier.io/docs/en/)  
+- [Jest Docs](https://jestjs.io/docs/getting-started)
