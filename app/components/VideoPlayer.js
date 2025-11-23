@@ -48,7 +48,7 @@ export default function VideoPlayer({ onGallery, onNewCapture }) {
 
   const checkServerConnection = async () => {
     try {
-      const response = await fetch(`http://${SERVER_IP}:5000/`, { 
+      await fetch(`http://${SERVER_IP}:5000/`, { 
         method: 'GET',
         timeout: 3000 
       });
