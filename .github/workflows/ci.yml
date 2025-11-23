@@ -20,13 +20,13 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        working-directory: ./APP
+        working-directory: ./app
         run: npm install
 
       - name: Run Lint
-        working-directory: ./APP
+        working-directory: ./app
         run: npm run lint
 
       - name: Run Tests
-        working-directory: ./APP
+        working-directory: ./app
         run: npm test
