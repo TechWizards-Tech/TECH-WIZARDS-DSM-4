@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Install, Lint and Test (app folder)
+    name: Install, Lint and Test
     runs-on: ubuntu-latest
 
     steps:
@@ -20,23 +20,24 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
-          cache-dependency-path: './app/package-lock.json'
+          cache-dependency-path: 'app/package-lock.json'
 
       - name: Install dependencies
         working-directory: ./app
-        run: |
-          npm ci
+        run: npm ci
         env:
           CI: true
 
       - name: Run linter
         working-directory: ./app
-        run: |
-          npm run lint
+        run: npm run lint
+
+      - name: Run prettier
+        working-directory: ./app
+        run: npm run format
 
       - name: Run tests
         working-directory: ./app
-        run: |
-          npm test -- --runInBand
+        run: npm test -- --runInBand
         env:
           CI: true
