@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Install, Lint and Test (app folder)
+    name: Install, Lint and Test
     runs-on: ubuntu-latest
 
     steps:
@@ -20,6 +20,7 @@ jobs:
         with:
           node-version: '18'
           cache: 'npm'
+          cache-dependency-path: 'app/package-lock.json'
 
       - name: Install dependencies
         working-directory: ./app
