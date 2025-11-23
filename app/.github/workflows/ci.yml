@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
 
       - name: Run Prettier check
         working-directory: ./app
-        run: npm run format    
+        run: npm run format
 
       - name: Run tests with coverage
         working-directory: ./app
@@ -44,7 +44,7 @@ jobs:
           npm test -- --runInBand
         env:
           CI: true
-          
+
       - name: Security audit
         working-directory: ./app
         run: |

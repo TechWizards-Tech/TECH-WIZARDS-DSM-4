@@ -10,7 +10,7 @@ export default function App() {
   const [captures, setCaptures] = useState([]);
 
   const handleNewCapture = (captureData) => {
-    setCaptures(prev => [captureData, ...prev]);
+    setCaptures((prev) => [captureData, ...prev]);
   };
 
   return (
@@ -18,16 +18,16 @@ export default function App() {
       {currentScreen === 'splash' && (
         <SplashScreen onFinish={() => setCurrentScreen('video')} />
       )}
-      
+
       {currentScreen === 'video' && (
-        <VideoPlayer 
+        <VideoPlayer
           onGallery={() => setCurrentScreen('gallery')}
           onNewCapture={handleNewCapture}
         />
       )}
 
       {currentScreen === 'gallery' && (
-        <GalleryScreen 
+        <GalleryScreen
           onVideo={() => setCurrentScreen('video')}
           captures={captures}
         />

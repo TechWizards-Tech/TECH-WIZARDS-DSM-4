@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  TouchableOpacity, 
-  StyleSheet, 
-  Image, 
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Image,
   FlatList,
   Dimensions,
   Modal,
   Alert,
-  Text
+  Text,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Sharing from 'expo-sharing';
@@ -52,7 +52,10 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
     try {
       const isAvailable = await Sharing.isAvailableAsync();
       if (!isAvailable) {
-        Alert.alert('Erro', 'Compartilhamento não disponível neste dispositivo');
+        Alert.alert(
+          'Erro',
+          'Compartilhamento não disponível neste dispositivo',
+        );
         return;
       }
 
@@ -77,18 +80,14 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
 
   const renderItem = ({ item }) => {
     const imageSource = item.isAsset ? item.source : { uri: item.uri };
-    
+
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.imageContainer}
         activeOpacity={0.7}
         onPress={() => handleImagePress(item)}
       >
-        <Image 
-          source={imageSource}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        <Image source={imageSource} style={styles.image} resizeMode="cover" />
         {!item.isAsset && (
           <View style={styles.capturedBadge}>
             <Ionicons name="camera" size={12} color="#fff" />
@@ -101,14 +100,10 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
   return (
     <View style={styles.container}>
       <View style={styles.logoWrapper}>
-        <Image 
-          source={LogoLong}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+        <Image source={LogoLong} style={styles.logo} resizeMode="contain" />
       </View>
 
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.videoButton}
         onPress={onVideo}
         activeOpacity={0.7}
@@ -118,7 +113,11 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
 
       {allCaptures.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="images-outline" size={80} color={colors.light.muted} />
+          <Ionicons
+            name="images-outline"
+            size={80}
+            color={colors.light.muted}
+          />
           <Text style={styles.emptyText}>Nenhuma captura ainda</Text>
           <Text style={styles.emptySubtext}>Capture frames do vídeo</Text>
         </View>
@@ -140,27 +139,39 @@ export default function GalleryScreen({ onVideo, captures = [] }) {
         onRequestClose={closeModal}
       >
         <View style={styles.modalContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.modalCloseButton}
             onPress={closeModal}
             activeOpacity={0.7}
           >
-            <Ionicons name="close" size={30} color={colors.light.primaryForeground} />
+            <Ionicons
+              name="close"
+              size={30}
+              color={colors.light.primaryForeground}
+            />
           </TouchableOpacity>
 
           {selectedImage && !selectedImage.isAsset && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.modalShareButton}
               onPress={handleShare}
               activeOpacity={0.7}
             >
-              <Ionicons name="share-social" size={28} color={colors.light.primaryForeground} />
+              <Ionicons
+                name="share-social"
+                size={28}
+                color={colors.light.primaryForeground}
+              />
             </TouchableOpacity>
           )}
 
           {selectedImage && (
-            <Image 
-              source={selectedImage.isAsset ? selectedImage.source : { uri: selectedImage.uri }}
+            <Image
+              source={
+                selectedImage.isAsset
+                  ? selectedImage.source
+                  : { uri: selectedImage.uri }
+              }
               style={styles.fullImage}
               resizeMode="contain"
             />

@@ -1,5 +1,11 @@
 import React, { useRef, useEffect } from 'react';
-import { View, StyleSheet, Image, Animated, ImageBackground } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  Image,
+  Animated,
+  ImageBackground,
+} from 'react-native';
 import { colors } from '../theme/colors';
 import BackgroundImg from '../assets/background.png';
 import Logo from '../assets/logo.png';
@@ -65,11 +71,7 @@ export default function SplashScreen({ onFinish }) {
             },
           ]}
         >
-          <Image
-            source={Logo}
-            style={styles.logo}
-            resizeMode="contain"
-          />
+          <Image source={Logo} style={styles.logo} resizeMode="contain" />
         </Animated.View>
       </View>
     </ImageBackground>
