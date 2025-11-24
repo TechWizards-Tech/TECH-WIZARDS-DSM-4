@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import * as Sharing from 'expo-sharing';
+import * as FileSystem from 'expo-file-system/legacy';
 import { colors, shadows, radius } from '../theme/colors';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -32,7 +33,7 @@ const assetCaptures = [
   { id: 'asset6', source: require('../assets/video/scrsht6.jpg'), isAsset: true },
 ];
 
-export default function GalleryScreen({ onVideo, captures = [], isLoading = false }) {
+export default function GalleryScreen({ onVideo, captures = [], isLoading = false, onDeleteCapture }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
   const insets = useSafeAreaInsets();
@@ -70,26 +71,74 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
     }
   };
 
+  const handleDelete = () => {
+    if (selectedImage.isAsset) {
+      Alert.alert('Info', 'Não é possível excluir imagens de exemplo');
+      return;
+    }
+
+    Alert.alert(
+      'Excluir imagem',
+      'Tem certeza que deseja excluir esta captura? Esta ação não pode ser desfeita.',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Deletar arquivo local
+              await FileSystem.deleteAsync(selectedImage.uri, { idempotent: true });
+              
+              // Remover da lista através do callback
+              if (onDeleteCapture) {
+                onDeleteCapture(selectedImage.id);
+              }
+              
+              closeModal();
+              
+              Alert.alert('✓ Excluído', 'Imagem removida com sucesso');
+            } catch (error) {
+              console.error('Erro ao excluir:', error);
+              Alert.alert('Erro', 'Não foi possível excluir a imagem');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const renderItem = ({ item }) => {
     const imageSource = item.isAsset ? item.source : { uri: item.uri };
     
     return (
-      <TouchableOpacity 
-        style={styles.imageContainer}
-        activeOpacity={0.8}
-        onPress={() => handleImagePress(item)}
-      >
-        <Image 
-          source={imageSource}
-          style={styles.image}
-          resizeMode="cover"
-        />
-        {!item.isAsset && item.inGallery && (
-          <View style={styles.galleryBadge}>
-            <Ionicons name="checkmark-circle" size={12} color="#fff" />
-          </View>
+      <View style={styles.imageWrapper}>
+        <TouchableOpacity 
+          style={styles.imageContainer}
+          activeOpacity={0.8}
+          onPress={() => handleImagePress(item)}
+        >
+          <Image 
+            source={imageSource}
+            style={styles.image}
+            resizeMode="cover"
+          />
+          {!item.isAsset && item.inGallery && (
+            <View style={styles.galleryBadge}>
+              <Ionicons name="checkmark-circle" size={12} color="#fff" />
+            </View>
+          )}
+        </TouchableOpacity>
+        
+        {!item.isAsset && item.name && (
+          <Text style={styles.imageName} numberOfLines={2} ellipsizeMode="tail">
+            {item.name}
+          </Text>
         )}
-      </TouchableOpacity>
+      </View>
     );
   };
 
@@ -222,49 +271,89 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
         </View>
       </View>
 
+      {/* Modal de Imagem - Estilo Android Gallery */}
       <Modal
         visible={selectedImage !== null}
-        transparent={true}
+        transparent={false}
         animationType="fade"
         onRequestClose={closeModal}
       >
-        <View style={styles.modalContainer}>
-          <StatusBar hidden />
+        <View style={styles.androidModalContainer}>
+          <StatusBar backgroundColor="#000000" barStyle="light-content" />
           
-          <TouchableOpacity 
-            style={styles.modalCloseButton}
-            onPress={closeModal}
-            activeOpacity={0.8}
-          >
-            <Ionicons name="close" size={32} color="white" />
-          </TouchableOpacity>
+          {/* Top Bar */}
+          <View style={styles.androidTopBar}>
+            <TouchableOpacity 
+              style={styles.androidBackButton}
+              onPress={closeModal}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="arrow-back" size={28} color="white" />
+            </TouchableOpacity>
 
-          {selectedImage && !selectedImage.isAsset && (
-            <>
-              <TouchableOpacity 
-                style={styles.modalShareButton}
-                onPress={handleShare}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="share-social" size={28} color="white" />
-              </TouchableOpacity>
-              
-              {selectedImage.inGallery && (
-                <View style={styles.modalInfoBadge}>
-                  <Ionicons name="checkmark-circle" size={16} color="#fff" />
-                  <Text style={styles.modalInfoText}>Salvo na galeria</Text>
-                </View>
-              )}
-            </>
-          )}
+            {selectedImage && selectedImage.name && (
+              <View style={styles.androidTitleContainer}>
+                <Text style={styles.androidTitle} numberOfLines={1}>
+                  {selectedImage.name}
+                </Text>
+                {selectedImage.timestamp && (
+                  <Text style={styles.androidSubtitle}>
+                    {new Date(selectedImage.timestamp).toLocaleDateString('pt-BR')}
+                  </Text>
+                )}
+              </View>
+            )}
+          </View>
 
+          {/* Image */}
           {selectedImage && (
-            <Image 
-              source={selectedImage.isAsset ? selectedImage.source : { uri: selectedImage.uri }}
-              style={styles.fullImage}
-              resizeMode="contain"
-            />
+            <View style={styles.androidImageContainer}>
+              <Image 
+                source={selectedImage.isAsset ? selectedImage.source : { uri: selectedImage.uri }}
+                style={styles.androidFullImage}
+                resizeMode="contain"
+              />
+            </View>
           )}
+
+          {/* Bottom Action Bar */}
+          <View style={styles.androidBottomBar}>
+            {selectedImage && !selectedImage.isAsset ? (
+              <>
+                <TouchableOpacity 
+                  style={styles.androidActionButton}
+                  onPress={handleShare}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="share-social-outline" size={26} color="white" />
+                  <Text style={styles.androidActionLabel}>Compartilhar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.androidActionButton}
+                  onPress={handleDelete}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="trash-outline" size={26} color="white" />
+                  <Text style={styles.androidActionLabel}>Excluir</Text>
+                </TouchableOpacity>
+
+                {selectedImage.inGallery && (
+                  <View style={styles.androidActionButton}>
+                    <Ionicons name="checkmark-circle" size={26} color="#4CAF50" />
+                    <Text style={[styles.androidActionLabel, { color: '#4CAF50' }]}>
+                      Na Galeria
+                    </Text>
+                  </View>
+                )}
+              </>
+            ) : (
+              <View style={styles.androidInfoContainer}>
+                <Ionicons name="star-outline" size={22} color="rgba(255,255,255,0.7)" />
+                <Text style={styles.androidInfoText}>Imagem de exemplo</Text>
+              </View>
+            )}
+          </View>
         </View>
       </Modal>
 
@@ -402,6 +491,19 @@ const styles = StyleSheet.create({
     padding: 3,
     ...shadows.light.sm,
   },
+  imageWrapper: {
+    width: imageSize,
+    margin: 4,
+  },
+  imageName: {
+    marginTop: 4,
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.light.foreground,
+    textAlign: 'center',
+    lineHeight: 14,
+    paddingHorizontal: 2,
+  },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -471,57 +573,86 @@ const styles = StyleSheet.create({
   navLabelActive: {
     fontWeight: '700',
   },
-  modalContainer: {
+  
+  // Android Gallery Modal Styles
+  androidModalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.98)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: '#000000',
   },
-  modalCloseButton: {
-    position: 'absolute',
-    top: 50,
-    right: 20,
-    zIndex: 10,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.light.lg,
-  },
-  modalShareButton: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    zIndex: 10,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    ...shadows.light.lg,
-  },
-  modalInfoBadge: {
-    position: 'absolute',
-    top: 110,
-    left: 20,
-    zIndex: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: '#4CAF50',
-    borderRadius: 16,
+  androidTopBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    ...shadows.light.md,
+    paddingHorizontal: 8,
+    paddingTop: Platform.OS === 'ios' ? 50 : 20,
+    paddingBottom: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
   },
-  modalInfoText: {
-    color: '#fff',
+  androidBackButton: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 24,
+  },
+  androidTitleContainer: {
+    flex: 1,
+    marginLeft: 8,
+    marginRight: 48,
+  },
+  androidTitle: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    letterSpacing: 0.2,
+  },
+  androidSubtitle: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 13,
+    marginTop: 2,
+  },
+  androidImageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000000',
+  },
+  androidFullImage: {
+    width: width,
+    height: height,
+  },
+  androidBottomBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  androidActionButton: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 80,
+    gap: 6,
+  },
+  androidActionLabel: {
+    color: 'white',
     fontSize: 12,
-    fontWeight: '700',
+    fontWeight: '500',
     letterSpacing: 0.3,
+  },
+  androidInfoContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 8,
+  },
+  androidInfoText: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontSize: 13,
+    fontWeight: '500',
   },
   fullImage: {
     width: width,

@@ -13,6 +13,8 @@ import {
   StatusBar,
   Modal,
   ActivityIndicator,
+  TextInput,
+  Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LogBox } from 'react-native';
@@ -35,6 +37,9 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
   const [imageError, setImageError] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showNamingModal, setShowNamingModal] = useState(false);
+  const [captureName, setCaptureName] = useState('');
+  const [pendingCapture, setPendingCapture] = useState(null);
   const flashAnim = useRef(new Animated.Value(0)).current;
   const isMobile = Platform.OS === 'android' || Platform.OS === 'ios';
   const insets = useSafeAreaInsets();
@@ -129,22 +134,20 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
         }
       }
 
-      if (onNewCapture) {
-        onNewCapture({
-          id: timestamp.toString(),
-          uri: fileUri,
-          galleryUri: asset ? asset.uri : null,
-          timestamp,
-          inGallery: hasMediaLibraryPermission && asset !== null,
-        });
-      }
-
-      Alert.alert(
-        '✓ Captura salva!', 
-        hasMediaLibraryPermission 
-          ? 'Frame salvo na galeria do dispositivo' 
-          : 'Frame capturado (galeria não autorizada)'
-      );
+      // Salvar dados temporariamente e mostrar modal de nomeação
+      setPendingCapture({
+        id: timestamp.toString(),
+        uri: fileUri,
+        galleryUri: asset ? asset.uri : null,
+        timestamp,
+        inGallery: hasMediaLibraryPermission && asset !== null,
+      });
+      
+      // Sugerir nome padrão com data/hora
+      const now = new Date();
+      const defaultName = `Captura ${now.getDate()}/${now.getMonth() + 1} ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      setCaptureName(defaultName);
+      setShowNamingModal(true);
       
     } catch (error) {
       console.error('Erro ao capturar frame:', error);
@@ -155,6 +158,32 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
     } finally {
       setIsCapturing(false);
     }
+  };
+
+  const saveNamedCapture = () => {
+    if (pendingCapture && onNewCapture) {
+      onNewCapture({
+        ...pendingCapture,
+        name: captureName.trim() || 'Sem nome',
+      });
+      
+      setShowNamingModal(false);
+      setPendingCapture(null);
+      setCaptureName('');
+      
+      Alert.alert(
+        '✓ Captura salva!', 
+        hasMediaLibraryPermission 
+          ? `"${captureName}" salvo na galeria` 
+          : `"${captureName}" capturado`
+      );
+    }
+  };
+
+  const cancelNaming = () => {
+    setShowNamingModal(false);
+    setPendingCapture(null);
+    setCaptureName('');
   };
 
   const renderVideoContent = (isFullscreenView = false) => {
@@ -381,6 +410,75 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
             <Ionicons name="contract" size={28} color="white" />
           </TouchableOpacity>
         </View>
+      </Modal>
+
+      {/* Modal Nomeação de Captura */}
+      <Modal
+        visible={showNamingModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={cancelNaming}
+      >
+        <TouchableOpacity 
+          style={styles.namingModalOverlay}
+          activeOpacity={1}
+          onPress={() => Keyboard.dismiss()}
+        >
+          <TouchableOpacity 
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.namingModalContent}>
+              <View style={styles.namingHeader}>
+                <Ionicons name="create" size={40} color={colors.light.primary} />
+                <Text style={styles.namingTitle}>Nomear Captura</Text>
+              </View>
+
+              {pendingCapture && (
+                <Image 
+                  source={{ uri: pendingCapture.uri }}
+                  style={styles.namingPreview}
+                  resizeMode="cover"
+                />
+              )}
+
+              <View style={styles.namingInputContainer}>
+                <Text style={styles.namingLabel}>Nome da captura:</Text>
+                <TextInput
+                  style={styles.namingInput}
+                  value={captureName}
+                  onChangeText={setCaptureName}
+                  placeholder="Digite um nome..."
+                  placeholderTextColor={colors.light.mutedForeground}
+                  autoFocus={true}
+                  maxLength={50}
+                  returnKeyType="done"
+                  onSubmitEditing={saveNamedCapture}
+                />
+                <Text style={styles.namingCounter}>{captureName.length}/50</Text>
+              </View>
+
+              <View style={styles.namingButtons}>
+                <TouchableOpacity 
+                  style={styles.namingCancelButton}
+                  onPress={cancelNaming}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.namingCancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.namingSaveButton}
+                  onPress={saveNamedCapture}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="checkmark-circle" size={20} color="white" />
+                  <Text style={styles.namingSaveButtonText}>Salvar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
 
       {/* Modal Sobre o Projeto */}
@@ -699,6 +797,101 @@ const styles = StyleSheet.create({
     ...shadows.light.md,
   },
   aboutCloseButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  
+  // Naming Modal styles
+  namingModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  namingModalContent: {
+    backgroundColor: colors.light.background,
+    borderRadius: radius.xl,
+    padding: 24,
+    width: '100%',
+    maxWidth: 500,
+    ...shadows.light.xl,
+  },
+  namingHeader: {
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  namingTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: colors.light.foreground,
+    letterSpacing: 0.3,
+  },
+  namingPreview: {
+    width: '100%',
+    height: 200,
+    borderRadius: radius.lg,
+    marginBottom: 20,
+    backgroundColor: colors.light.muted,
+  },
+  namingInputContainer: {
+    marginBottom: 20,
+  },
+  namingLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.light.foreground,
+    marginBottom: 8,
+    letterSpacing: 0.2,
+  },
+  namingInput: {
+    backgroundColor: colors.light.muted,
+    borderRadius: radius.lg,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: colors.light.foreground,
+    borderWidth: 2,
+    borderColor: colors.light.primary,
+  },
+  namingCounter: {
+    fontSize: 12,
+    color: colors.light.mutedForeground,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  namingButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  namingCancelButton: {
+    flex: 1,
+    backgroundColor: colors.light.muted,
+    paddingVertical: 14,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+  },
+  namingCancelButtonText: {
+    color: colors.light.foreground,
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  namingSaveButton: {
+    flex: 1,
+    backgroundColor: colors.light.primary,
+    paddingVertical: 14,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
+    ...shadows.light.md,
+  },
+  namingSaveButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '700',

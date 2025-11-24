@@ -85,6 +85,10 @@ export default function App() {
     setCaptures(prev => [captureData, ...prev]);
   };
 
+  const handleDeleteCapture = (captureId) => {
+    setCaptures(prev => prev.filter(c => c.id !== captureId));
+  };
+
   return (
     <SafeAreaProvider>
       <View style={styles.container}>
@@ -105,6 +109,7 @@ export default function App() {
             onVideo={() => setCurrentScreen('video')}
             captures={captures}
             isLoading={isLoadingCaptures}
+            onDeleteCapture={handleDeleteCapture}
           />
         )}
       </View>
