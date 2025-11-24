@@ -43,6 +43,7 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
   };
 
   const closeModal = () => {
+    console.log('closeModal chamado - fechando modal');
     setSelectedImage(null);
   };
 
@@ -182,7 +183,7 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.headerTitle}>Galeria</Text>
+         
         </View>
 
         {isLoading ? (
@@ -281,15 +282,22 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
         <View style={styles.androidModalContainer}>
           <StatusBar backgroundColor="#000000" barStyle="light-content" />
           
+          {/* Back Button - Absolute Position */}
+          <TouchableOpacity 
+            style={styles.androidBackButtonAbsolute}
+            onPress={() => {
+              console.log('Botão voltar pressionado');
+              closeModal();
+            }}
+            activeOpacity={0.7}
+            hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+          >
+            <Ionicons name="arrow-back" size={28} color="white" />
+          </TouchableOpacity>
+          
           {/* Top Bar */}
           <View style={styles.androidTopBar}>
-            <TouchableOpacity 
-              style={styles.androidBackButton}
-              onPress={closeModal}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={28} color="white" />
-            </TouchableOpacity>
+            <View style={styles.androidBackButtonPlaceholder} />
 
             {selectedImage && selectedImage.name && (
               <View style={styles.androidTitleContainer}>
@@ -593,6 +601,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 24,
+    zIndex: 10,
+  },
+  androidBackButtonAbsolute: {
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 20,
+    left: 8,
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 24,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    zIndex: 1000,
+  },
+  androidBackButtonPlaceholder: {
+    width: 48,
+    height: 48,
   },
   androidTitleContainer: {
     flex: 1,
