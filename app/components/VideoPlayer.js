@@ -171,12 +171,7 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
       setPendingCapture(null);
       setCaptureName('');
       
-      Alert.alert(
-        '✓ Captura salva!', 
-        hasMediaLibraryPermission 
-          ? `"${captureName}" salvo na galeria` 
-          : `"${captureName}" capturado`
-      );
+      // Removido Alert de confirmação
     }
   };
 
@@ -412,11 +407,11 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
         </View>
       </Modal>
 
-      {/* Modal Nomeação de Captura */}
+      {/* Modal Nomeação de Captura - Simplificado */}
       <Modal
         visible={showNamingModal}
         transparent={true}
-        animationType="slide"
+        animationType="fade"
         onRequestClose={cancelNaming}
       >
         <TouchableOpacity 
@@ -430,17 +425,9 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
           >
             <View style={styles.namingModalContent}>
               <View style={styles.namingHeader}>
-                <Ionicons name="create" size={40} color={colors.light.primary} />
+                <Ionicons name="create" size={32} color={colors.light.primary} />
                 <Text style={styles.namingTitle}>Nomear Captura</Text>
               </View>
-
-              {pendingCapture && (
-                <Image 
-                  source={{ uri: pendingCapture.uri }}
-                  style={styles.namingPreview}
-                  resizeMode="cover"
-                />
-              )}
 
               <View style={styles.namingInputContainer}>
                 <Text style={styles.namingLabel}>Nome da captura:</Text>
@@ -803,10 +790,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   
-  // Naming Modal styles
+  // Naming Modal styles - Simplificado
   namingModalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -814,28 +801,23 @@ const styles = StyleSheet.create({
   namingModalContent: {
     backgroundColor: colors.light.background,
     borderRadius: radius.xl,
-    padding: 24,
+    padding: 20,
     width: '100%',
-    maxWidth: 500,
+    maxWidth: 400,
     ...shadows.light.xl,
   },
   namingHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
+    justifyContent: 'center',
+    marginBottom: 20,
+    gap: 10,
   },
   namingTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: colors.light.foreground,
     letterSpacing: 0.3,
-  },
-  namingPreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: radius.lg,
-    marginBottom: 20,
-    backgroundColor: colors.light.muted,
   },
   namingInputContainer: {
     marginBottom: 20,

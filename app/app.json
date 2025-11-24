@@ -30,7 +30,10 @@
         "RECORD_AUDIO",
         "MODIFY_AUDIO_SETTINGS",
         "SYSTEM_ALERT_WINDOW",
-        "VIBRATE"
+        "VIBRATE",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET"
       ],
       "usesCleartextTraffic": true,
       "networkSecurityConfig": "./network_security_config.xml",
@@ -43,11 +46,6 @@
     "web": {
       "favicon": "./assets/logo.png"
     },
-    "extra": {
-      "eas": {
-        "projectId": "68e6e59f-1154-4ce6-94b1-5a29d1345c07"
-      }
-    },
     "plugins": [
       "expo-video",
       [
@@ -56,6 +54,11 @@
           "photosPermission": "Permitir que $(PRODUCT_NAME) acesse suas fotos."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "f90ac7c4-1bad-4635-b83f-16ff65d613e6"
+      }
+    }
   }
 }
