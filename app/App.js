@@ -35,6 +35,37 @@ export default function App() {
     loadSavedCaptures();
   }, []);
 
+  // Arquivo de metadados (nomes das capturas)
+  const METADATA_FILE = `${FileSystem.documentDirectory}captures/metadata.json`;
+
+  // Carregar metadados (nomes)
+  const loadMetadata = async () => {
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(METADATA_FILE);
+      if (fileInfo.exists) {
+        const content = await FileSystem.readAsStringAsync(METADATA_FILE);
+        return JSON.parse(content);
+      }
+      return {};
+    } catch (error) {
+      console.error('Erro ao carregar metadados:', error);
+      return {};
+    }
+  };
+
+  // Salvar metadados (nomes)
+  const saveMetadata = async (metadata) => {
+    try {
+      await FileSystem.writeAsStringAsync(
+        METADATA_FILE,
+        JSON.stringify(metadata, null, 2)
+      );
+      console.log('Metadados salvos com sucesso');
+    } catch (error) {
+      console.error('Erro ao salvar metadados:', error);
+    }
+  };
+
   const loadSavedCaptures = async () => {
     try {
       console.log('Carregando capturas salvas...');
@@ -48,6 +79,10 @@ export default function App() {
         return;
       }
 
+      // Carregar metadados (nomes)
+      const metadata = await loadMetadata();
+      console.log('Metadados carregados:', metadata);
+
       const files = await FileSystem.readDirectoryAsync(capturesDir);
       console.log(`Encontrados ${files.length} arquivos`);
 
@@ -59,11 +94,13 @@ export default function App() {
           
           const timestampMatch = file.match(/capture_(\d+)\.jpg/);
           const timestamp = timestampMatch ? parseInt(timestampMatch[1]) : fileInfo.modificationTime * 1000;
+          const captureId = timestamp.toString();
           
           savedCaptures.push({
-            id: timestamp.toString(),
+            id: captureId,
             uri: fileUri,
             timestamp: timestamp,
+            name: metadata[captureId] || `Captura ${new Date(timestamp).toLocaleDateString('pt-BR')}`, // Nome dos metadados ou padrão
             inGallery: true,
           });
         }
@@ -81,12 +118,68 @@ export default function App() {
     }
   };
 
-  const handleNewCapture = (captureData) => {
-    setCaptures(prev => [captureData, ...prev]);
+  const handleNewCapture = async (captureData) => {
+    try {
+      // Adicionar captura ao estado
+      setCaptures(prev => [captureData, ...prev]);
+      
+      // Se a captura tem nome, salvar nos metadados
+      if (captureData.name && captureData.id) {
+        const metadata = await loadMetadata();
+        metadata[captureData.id] = captureData.name;
+        await saveMetadata(metadata);
+        console.log(`Metadados salvos para captura ${captureData.id}: ${captureData.name}`);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar captura:', error);
+      // Ainda adiciona ao estado mesmo se falhar ao salvar metadados
+      setCaptures(prev => [captureData, ...prev]);
+    }
   };
 
-  const handleDeleteCapture = (captureId) => {
-    setCaptures(prev => prev.filter(c => c.id !== captureId));
+  const handleDeleteCapture = async (captureId) => {
+    try {
+      // Remover do estado
+      setCaptures(prev => prev.filter(c => c.id !== captureId));
+      
+      // Remover dos metadados
+      const metadata = await loadMetadata();
+      delete metadata[captureId];
+      await saveMetadata(metadata);
+      
+      console.log(`Captura ${captureId} removida dos metadados`);
+    } catch (error) {
+      console.error('Erro ao deletar captura:', error);
+      // Ainda remove do estado mesmo se falhar ao limpar metadados
+      setCaptures(prev => prev.filter(c => c.id !== captureId));
+    }
+  };
+
+  const handleEditCaptureName = async (captureId, newName) => {
+    try {
+      // Atualizar estado
+      setCaptures(prev =>
+        prev.map(capture =>
+          capture.id === captureId
+            ? { ...capture, name: newName }
+            : capture
+        )
+      );
+
+      // Carregar metadados atuais
+      const metadata = await loadMetadata();
+      
+      // Atualizar metadados
+      metadata[captureId] = newName;
+      
+      // Salvar metadados
+      await saveMetadata(metadata);
+      
+      console.log(`Nome da captura ${captureId} atualizado para: ${newName}`);
+    } catch (error) {
+      console.error('Erro ao editar nome:', error);
+      Alert.alert('Erro', 'Não foi possível salvar o novo nome');
+    }
   };
 
   return (
@@ -110,6 +203,7 @@ export default function App() {
             captures={captures}
             isLoading={isLoadingCaptures}
             onDeleteCapture={handleDeleteCapture}
+            onEditCaptureName={handleEditCaptureName}
           />
         )}
       </View>

@@ -9,6 +9,8 @@ import {
   Modal,
   Alert,
   Text,
+  TextInput,
+  Keyboard,
   ImageBackground,
   StatusBar,
   Platform,
@@ -33,9 +35,11 @@ const assetCaptures = [
   { id: 'asset6', source: require('../assets/video/scrsht6.jpg'), isAsset: true },
 ];
 
-export default function GalleryScreen({ onVideo, captures = [], isLoading = false, onDeleteCapture }) {
+export default function GalleryScreen({ onVideo, captures = [], isLoading = false, onDeleteCapture, onEditCaptureName }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [showAbout, setShowAbout] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingName, setEditingName] = useState('');
   const insets = useSafeAreaInsets();
 
   const handleImagePress = (item) => {
@@ -112,6 +116,48 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
     );
   };
 
+  const handleEditName = () => {
+    if (selectedImage.isAsset) {
+      Alert.alert('Info', 'Não é possível editar imagens de exemplo');
+      return;
+    }
+
+    // Abrir modal customizado com nome atual
+    setEditingName(selectedImage.name || '');
+    setShowEditModal(true);
+  };
+
+  const saveEditedName = () => {
+    const newName = editingName.trim();
+    
+    if (!newName) {
+      Alert.alert('Erro', 'O nome não pode estar vazio');
+      return;
+    }
+
+    // Persistir através do callback
+    if (onEditCaptureName) {
+      onEditCaptureName(selectedImage.id, newName);
+    }
+    
+    // Atualizar localmente também para atualizar o modal
+    setSelectedImage({
+      ...selectedImage,
+      name: newName
+    });
+    
+    // Fechar modal de edição
+    setShowEditModal(false);
+    setEditingName('');
+    
+    console.log('Nome atualizado:', newName);
+  };
+
+  const cancelEdit = () => {
+    setShowEditModal(false);
+    setEditingName('');
+  };
+
   const renderItem = ({ item }) => {
     const imageSource = item.isAsset ? item.source : { uri: item.uri };
     
@@ -183,7 +229,7 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
             style={styles.logo}
             resizeMode="contain"
           />
-         
+          <Text style={styles.headerTitle}>Galeria</Text>
         </View>
 
         {isLoading ? (
@@ -325,9 +371,21 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
           )}
 
           {/* Bottom Action Bar */}
-          <View style={styles.androidBottomBar}>
+          <View style={[
+            styles.androidBottomBar,
+            { paddingBottom: Math.max(insets.bottom, 20) }
+          ]}>
             {selectedImage && !selectedImage.isAsset ? (
               <>
+                <TouchableOpacity 
+                  style={styles.androidActionButton}
+                  onPress={handleEditName}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name="create-outline" size={26} color="white" />
+                  <Text style={styles.androidActionLabel}>Editar</Text>
+                </TouchableOpacity>
+
                 <TouchableOpacity 
                   style={styles.androidActionButton}
                   onPress={handleShare}
@@ -408,6 +466,70 @@ export default function GalleryScreen({ onVideo, captures = [], isLoading = fals
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+
+      {/* Modal Editar Nome */}
+      <Modal
+        visible={showEditModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={cancelEdit}
+      >
+        <TouchableOpacity 
+          style={styles.editModalOverlay}
+          activeOpacity={1}
+          onPress={() => {
+            Keyboard.dismiss();
+            cancelEdit();
+          }}
+        >
+          <TouchableOpacity 
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            <View style={styles.editModalContent}>
+              <View style={styles.editHeader}>
+                <Ionicons name="create" size={32} color={colors.light.primary} />
+                <Text style={styles.editTitle}>Editar Nome</Text>
+              </View>
+
+              <View style={styles.editInputContainer}>
+                <Text style={styles.editLabel}>Nome da captura:</Text>
+                <TextInput
+                  style={styles.editInput}
+                  value={editingName}
+                  onChangeText={setEditingName}
+                  placeholder="Digite o nome..."
+                  placeholderTextColor={colors.light.mutedForeground}
+                  autoFocus={true}
+                  maxLength={50}
+                  returnKeyType="done"
+                  onSubmitEditing={saveEditedName}
+                />
+                <Text style={styles.editCounter}>{editingName.length}/50</Text>
+              </View>
+
+              <View style={styles.editButtons}>
+                <TouchableOpacity 
+                  style={styles.editCancelButton}
+                  onPress={cancelEdit}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.editCancelButtonText}>Cancelar</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  style={styles.editSaveButton}
+                  onPress={saveEditedName}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="checkmark-circle" size={20} color="white" />
+                  <Text style={styles.editSaveButtonText}>Salvar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        </TouchableOpacity>
       </Modal>
     </ImageBackground>
   );
@@ -650,8 +772,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 20,
-    paddingVertical: 20,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    paddingTop: 20,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
@@ -744,6 +865,96 @@ const styles = StyleSheet.create({
     ...shadows.light.md,
   },
   aboutCloseButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+
+  // Edit Modal styles
+  editModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  editModalContent: {
+    backgroundColor: colors.light.background,
+    borderRadius: radius.xl,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+    ...shadows.light.xl,
+  },
+  editHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
+    gap: 10,
+  },
+  editTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: colors.light.foreground,
+    letterSpacing: 0.3,
+  },
+  editInputContainer: {
+    marginBottom: 20,
+  },
+  editLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.light.foreground,
+    marginBottom: 8,
+    letterSpacing: 0.2,
+  },
+  editInput: {
+    backgroundColor: colors.light.muted,
+    borderRadius: radius.md,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: colors.light.foreground,
+    borderWidth: 2,
+    borderColor: colors.light.primary,
+  },
+  editCounter: {
+    fontSize: 12,
+    color: colors.light.mutedForeground,
+    textAlign: 'right',
+    marginTop: 4,
+  },
+  editButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  editCancelButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    backgroundColor: colors.light.muted,
+  },
+  editCancelButtonText: {
+    color: colors.light.foreground,
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+  },
+  editSaveButton: {
+    flex: 1,
+    flexDirection: 'row',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.light.primary,
+    ...shadows.light.md,
+  },
+  editSaveButtonText: {
     color: 'white',
     fontSize: 16,
     fontWeight: '700',
