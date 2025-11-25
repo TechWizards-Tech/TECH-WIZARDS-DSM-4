@@ -40,43 +40,87 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
   const [showNamingModal, setShowNamingModal] = useState(false);
   const [captureName, setCaptureName] = useState('');
   const [pendingCapture, setPendingCapture] = useState(null);
+  const [activeServerIP, setActiveServerIP] = useState(null);
+  const [isSearchingServer, setIsSearchingServer] = useState(true);
   const flashAnim = useRef(new Animated.Value(0)).current;
   const isMobile = Platform.OS === 'android' || Platform.OS === 'ios';
   const insets = useSafeAreaInsets();
 
-  // URL do servidor
-  const SERVER_IP = '10.42.171.51';
-  const VIDEO_FEED_URL = `http://${SERVER_IP}:5000/video`;
-  const SNAPSHOT_URL = `http://${SERVER_IP}:5000/snapshot`;
+  // Lista de IPs para tentar em ordem (fallback automático)
+  const SERVER_IPS = [
+    '192.168.0.10',   // IP primário (novo)
+    '10.42.171.51',   // IP secundário (antigo)
+  ];
+
+  // URLs dinâmicas baseadas no IP ativo
+  const VIDEO_FEED_URL = activeServerIP ? `http://${activeServerIP}:5000/video` : null;
+  const SNAPSHOT_URL = activeServerIP ? `http://${activeServerIP}:5000/snapshot` : null;
+
+  // Tenta conectar em um IP específico
+  const tryConnectToIP = async (ip) => {
+    try {
+      console.log(`Tentando conectar em ${ip}:5000...`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+
+      const response = await fetch(`http://${ip}:5000/snapshot`, {
+        method: 'HEAD',
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (response.ok) {
+        console.log(`✓ Conectado em ${ip}:5000`);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.log(`✗ Falha ao conectar em ${ip}:5000`);
+      return false;
+    }
+  };
+
+  // Procura servidor disponível na lista de IPs
+  const findAvailableServer = async () => {
+    setIsSearchingServer(true);
+    console.log('Procurando servidor disponível...');
+
+    for (const ip of SERVER_IPS) {
+      const connected = await tryConnectToIP(ip);
+      if (connected) {
+        setActiveServerIP(ip);
+        setIsConnected(true);
+        setConnectionError(false);
+        setIsSearchingServer(false);
+        console.log(`Usando servidor: ${ip}:5000`);
+        return true;
+      }
+    }
+
+    // Nenhum servidor encontrado
+    setActiveServerIP(null);
+    setIsConnected(false);
+    setConnectionError(true);
+    setIsSearchingServer(false);
+    console.log('Nenhum servidor disponível');
+    return false;
+  };
 
   useEffect(() => {
-    checkServerConnection();
+    findAvailableServer();
     
     const interval = setInterval(() => {
-      checkServerConnection();
-    }, 5000);
+      if (!isConnected) {
+        findAvailableServer();
+      }
+    }, 10000); // Tenta reconectar a cada 10s se desconectado
 
     return () => clearInterval(interval);
   }, []);
 
-  const checkServerConnection = async () => {
-    try {
-      const response = await fetch(`http://${SERVER_IP}:5000/`, { 
-        method: 'GET',
-        timeout: 3000 
-      });
-      setIsConnected(true);
-      setConnectionError(false);
-      setImageError(false);
-    } catch (error) {
-      console.log('Servidor offline:', error);
-      setIsConnected(false);
-      setConnectionError(true);
-    }
-  };
-
   const captureFrame = async () => {
-    if (isCapturing || !isConnected) return;
+    if (isCapturing || !isConnected || !activeServerIP) return;
     setIsCapturing(true);
 
     try {
@@ -276,17 +320,25 @@ export default function VideoPlayer({ onGallery, onNewCapture, hasMediaLibraryPe
             <ActivityIndicator size="large" color={colors.light.primary} />
             <Ionicons name="videocam-off" size={48} color={colors.light.mutedForeground} style={styles.placeholderIcon} />
             <Text style={styles.placeholderText}>
-              {connectionError ? 'Microscópio Offline' : 'Conectando ao microscópio...'}
+              {isSearchingServer 
+                ? 'Procurando servidor...' 
+                : connectionError 
+                  ? 'Microscópio Offline' 
+                  : 'Conectando ao microscópio...'}
             </Text>
             <Text style={styles.placeholderSubtext}>
-              {SERVER_IP}:5000
+              {isSearchingServer 
+                ? 'Testando IPs disponíveis' 
+                : activeServerIP 
+                  ? `${activeServerIP}:5000` 
+                  : 'Nenhum servidor encontrado'}
             </Text>
-            {connectionError && (
+            {connectionError && !isSearchingServer && (
               <TouchableOpacity 
                 style={styles.retryButton}
                 onPress={() => {
                   setConnectionError(false);
-                  checkServerConnection();
+                  findAvailableServer();
                 }}
               >
                 <Ionicons name="refresh" size={16} color="white" />
