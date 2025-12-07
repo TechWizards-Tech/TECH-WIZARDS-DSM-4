@@ -29,6 +29,15 @@ O versionamento segue o modelo de branches:
 
 ---
 
+
+## 📸 Galeria
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/TechWizards-Tech/TECH-WIZARDS-DSM-4/main/documentos/DSM-4.jpeg" width="350">
+  <img src="https://raw.githubusercontent.com/TechWizards-Tech/TECH-WIZARDS-DSM-4/main/documentos/dsm-4%20(2).jpeg" width="350">
+</p>
+
+---
 ## Integração e Entrega Contínua (CI/CD do Projeto)
 
 O projeto possui **workflow automatizado** de CI que executa **lint, prettier e testes unitários** via GitHub Actions.  
